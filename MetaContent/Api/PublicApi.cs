@@ -1,30 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using MetaContent.Data;
 
 namespace MetaContent.Api
 {
-    public static class PublicApi
+    public class PublicApi
     {
         private const string CacheKey = "MetaData-ContentId:{0}-";
 
-        public static IList<ContentMeta> List(Guid contentId)
+        public static PublicApi Instance => new PublicApi();
+
+        public IList<ContentMeta> List(Guid contentId)
         {
             // TODO: Add caching
             return DataService.List(contentId);
         }
-        public static ContentMeta Get(Guid contentId, string key)
+        public ContentMeta Get(Guid contentId, string key)
         {
             // TODO: Add caching
             return DataService.Get(contentId, key);
         }
 
-        public static void Delete(Guid contentId)
+        public void Delete(Guid contentId)
         {
             DataService.Delete(contentId);
         }
 
-        public static ContentMeta Set(Guid contentId, string key, string value)
+        public ContentMeta Set(Guid contentId, string key, string value)
         {
             // TODO: Invalidate cache
             // Consider invalidating List cache as well as Get.

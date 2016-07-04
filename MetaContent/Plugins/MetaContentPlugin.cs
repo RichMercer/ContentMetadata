@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using MetaContent.Api;
 using MetaContent.Data;
 using Telligent.DynamicConfiguration.Components;
 using Telligent.Evolution.Extensibility.Api.Version1;
 using Telligent.Evolution.Extensibility.Version1;
+using PublicApi = Telligent.Evolution.Extensibility.Api.Version1.PublicApi;
 
 namespace MetaContent.Plugins
 {
-    public class MetaContentPlugin : IInstallablePlugin, IRequiredConfigurationPlugin
+    public class MetaContentPlugin : IInstallablePlugin, IRequiredConfigurationPlugin, IPluginGroup
     {
         private IPluginConfiguration Configuration { get; set; }
 
@@ -25,7 +28,7 @@ namespace MetaContent.Plugins
         private void EventsOnAfterDelete(ContentAfterDeleteEventArgs e)
         {
             // TODO: Consider moving to IEvolutionJob to avoid blocking UI
-            Api.PublicApi.Delete(e.ContentId);
+            Api.PublicApi.Instance.Delete(e.ContentId);
         }
 
         #endregion
@@ -65,6 +68,21 @@ namespace MetaContent.Plugins
         public void Update(IPluginConfiguration configuration)
         {
             Configuration = configuration;
+        }
+
+        #endregion
+
+        #region IPluginGroup Members
+
+        public IEnumerable<Type> Plugins
+        {
+            get
+            {
+                return new[]
+                {
+                    typeof (WidgetApi)
+                };
+            }
         }
 
         #endregion

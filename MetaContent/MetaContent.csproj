@@ -50,13 +50,18 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.Components.dll</HintPath>
     </Reference>
+    <Reference Include="Telligent.Evolution.ScriptedContentFragments, Version=9.2.0.1667, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.ScriptedContentFragments.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\PublicApi.cs" />
+    <Compile Include="Api\WidgetApi.cs" />
     <Compile Include="ContentMeta.cs" />
     <Compile Include="Data\DataService.cs" />
     <Compile Include="Plugins\MetaContentPlugin.cs" />
-    <Compile Include="MetaExtensions.cs" />
+    <Compile Include="Extensions\MetaExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
