@@ -8,12 +8,19 @@ namespace MetaContent
 {
     public class ContentMeta
     {
-        public Guid ContentId { get; set; }
+        public ContentMeta(Guid contentId, Guid contentTypeId, string key, string value)
+        {
+            ContentId = contentId;
+            ContentTypeId = contentTypeId;
+            Key = key;
+            Value = value;
+        }
+        public Guid ContentId { get; }
 
-        public Guid ContentTypeId { get; set; }
+        public Guid ContentTypeId { get; }
 
-        public string Key { get; set; }
+        public string Key { get; }
 
-        public string Value { get; set; }
+        public string Value { get; }
     }
 }

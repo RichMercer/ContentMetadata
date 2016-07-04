@@ -191,37 +191,32 @@ namespace MetaContent.Data
             }
         }
 
-        public static ContentMeta Set(Guid contentId, string key, string value)
+        public static void Set(Guid contentId, Guid contentTypeId, string key, string value)
         {
-            ContentMeta item = null;
-
             using (var connection = GetSqlConnection())
             {
                 using (var command = CreateSprocCommand("[custom_MetaData_Set]", connection))
                 {
                     command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
-                    command.Parameters.Add("@ContentTypeId", SqlDbType.UniqueIdentifier).Value = contentId;
+                    command.Parameters.Add("@ContentTypeId", SqlDbType.UniqueIdentifier).Value = contentTypeId;
                     command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
-                    command.Parameters.Add("@DataValue", SqlDbType.Text).Value = key;
+                    command.Parameters.Add("@DataValue", SqlDbType.Text).Value = value;
 
                     connection.Open();
                     command.ExecuteNonQuery();
                     connection.Close();
                 }
             }
-
-            return item;
         }
 
         private static ContentMeta Populate(IDataReader reader)
         {
-            var article = new ContentMeta
-            {
-                ContentId = reader["ContentId"] == null ? Guid.Empty : new Guid(reader["ContentId"].ToString()),
-                ContentTypeId = reader["ContentTypeId"] == null ? Guid.Empty : new Guid(reader["ContentTypeId"].ToString()),
-                Key = reader["DataKey"].ToString(),
-                Value = reader["DataValue"].ToString()
-            };
+            var article = new ContentMeta(
+                reader["ContentId"] == null ? Guid.Empty : new Guid(reader["ContentId"].ToString()),
+                reader["ContentTypeId"] == null ? Guid.Empty : new Guid(reader["ContentTypeId"].ToString()),
+                reader["DataKey"].ToString(),
+                reader["DataValue"].ToString()
+                );
 
             return article;
         }

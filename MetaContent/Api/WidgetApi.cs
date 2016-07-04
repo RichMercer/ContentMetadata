@@ -8,7 +8,7 @@ namespace MetaContent.Api
 
         public string Description => "Allows access to IContent MetaData from widgets.";
 
-        public object Extension => new Api.PublicApi();
+        public object Extension => new PublicApi();
 
         public string ExtensionName => "metadata_v1_content";
 
