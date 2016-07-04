@@ -44,7 +44,6 @@ namespace ContentMetadata.Data
                 {
                     int.TryParse(command.ExecuteScalar().ToString(), out value);
                 }
-                connection.Close();
             }
 
             return Convert.ToBoolean(value);
@@ -65,7 +64,6 @@ namespace ContentMetadata.Data
                     
                     int.TryParse(result?.ToString(), out value);
                 }
-                connection.Close();
             }
 
             return Convert.ToBoolean(value);
@@ -93,7 +91,6 @@ namespace ContentMetadata.Data
                         command.ExecuteNonQuery();
                     }
                 }
-                connection.Close();
             }
         }
 
@@ -159,7 +156,7 @@ namespace ContentMetadata.Data
                     
                     connection.Open();
 
-                    using (SqlDataReader dr = command.ExecuteReader(CommandBehavior.CloseConnection))
+                    using (SqlDataReader dr = command.ExecuteReader())
                     {
                         while (dr.Read())
                         {
@@ -168,8 +165,6 @@ namespace ContentMetadata.Data
                         // Done with the reader and the connection
                         dr.Close();
                     }
-
-                    connection.Close();
                 }
             }
 
@@ -186,7 +181,6 @@ namespace ContentMetadata.Data
 
                     connection.Open();
                     command.ExecuteNonQuery();
-                    connection.Close();
                 }
             }
         }
@@ -204,7 +198,6 @@ namespace ContentMetadata.Data
 
                     connection.Open();
                     command.ExecuteNonQuery();
-                    connection.Close();
                 }
             }
         }
