@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using Telligent.Evolution.Components;
 using Telligent.Evolution.Extensibility.Api.Version1;
 
-namespace MetaContent
+namespace MetaContent.Data
 {
     internal static class DataService
     {
@@ -130,7 +130,7 @@ namespace MetaContent
                 using (var command = CreateSprocCommand("[custom_MetaData_Get]", connection))
                 {
                     command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
-                    command.Parameters.Add("@DataKey", SqlDbType.UniqueIdentifier).Value = key;
+                    command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
 
                     connection.Open();
 
@@ -142,6 +142,57 @@ namespace MetaContent
                         }
                     }
 
+                    connection.Close();
+                }
+            }
+
+            return item;
+        }
+
+        public static IList<ContentMeta> List(Guid contentId)
+        {
+            var items = new List<ContentMeta>();
+
+            using (var connection = GetSqlConnection())
+            {
+                using (var command = CreateSprocCommand("[custom_MetaData_List]", connection))
+                {
+                    command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
+                    
+                    connection.Open();
+
+                    using (SqlDataReader dr = command.ExecuteReader(CommandBehavior.CloseConnection))
+                    {
+                        while (dr.Read())
+                        {
+                            items.Add(Populate(dr));
+                        }
+                        // Done with the reader and the connection
+                        dr.Close();
+                    }
+
+                    connection.Close();
+                }
+            }
+
+            return items;
+        }
+
+        public static ContentMeta Set(Guid contentId, string key, string value)
+        {
+            ContentMeta item = null;
+
+            using (var connection = GetSqlConnection())
+            {
+                using (var command = CreateSprocCommand("[custom_MetaData_Set]", connection))
+                {
+                    command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
+                    command.Parameters.Add("@ContentTypeId", SqlDbType.UniqueIdentifier).Value = contentId;
+                    command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
+                    command.Parameters.Add("@DataValue", SqlDbType.Text).Value = key;
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
                     connection.Close();
                 }
             }

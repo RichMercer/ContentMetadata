@@ -43,10 +43,10 @@ GRANT EXECUTE ON [dbo].[custom_MetaData_Get] TO PUBLIC
 GO
 
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[custom_MetaData_Update]') AND type in (N'P', N'PC'))
-	DROP PROCEDURE [dbo].[custom_MetaData_Update]
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[custom_MetaData_Set]') AND type in (N'P', N'PC'))
+	DROP PROCEDURE [dbo].[custom_MetaData_Set]
 GO
-CREATE PROCEDURE [dbo].[custom_MetaData_Update]
+CREATE PROCEDURE [dbo].[custom_MetaData_Set]
 		@ContentId		uniqueidentifier,
 		@ContentTypeId	uniqueidentifier,
 		@DataKey		nvarchar(64),
@@ -73,5 +73,5 @@ BEGIN
 END
 GO
 
-GRANT EXECUTE ON [dbo].[custom_MetaData_Update] TO PUBLIC
+GRANT EXECUTE ON [dbo].[custom_MetaData_Set] TO PUBLIC
 GO

@@ -52,9 +52,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\PublicApi.cs" />
     <Compile Include="ContentMeta.cs" />
-    <Compile Include="DataService.cs" />
-    <Compile Include="MetaContentPlugin.cs" />
+    <Compile Include="Data\DataService.cs" />
+    <Compile Include="Plugins\MetaContentPlugin.cs" />
     <Compile Include="MetaExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

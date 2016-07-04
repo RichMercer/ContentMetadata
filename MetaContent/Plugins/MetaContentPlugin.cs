@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Reflection;
+using MetaContent.Data;
 using Telligent.DynamicConfiguration.Components;
 using Telligent.Evolution.Extensibility.Version1;
 
-namespace MetaContent
+namespace MetaContent.Plugins
 {
     public class MetaContentPlugin : IInstallablePlugin, IRequiredConfigurationPlugin
     {
