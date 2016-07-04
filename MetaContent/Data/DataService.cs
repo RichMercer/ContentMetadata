@@ -120,7 +120,7 @@ namespace ContentMetadata.Data
 
         public static ContentMetadata Get(Guid contentId, string key)
         {
-            ContentMetadata item = null;
+            var item = new ContentMetadata();
 
             using (var connection = GetSqlConnection())
             {

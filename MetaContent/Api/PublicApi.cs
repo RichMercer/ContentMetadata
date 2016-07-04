@@ -21,7 +21,7 @@ namespace ContentMetadata.Api
             // TODO: Add caching
             return DataService.Get(contentId, key);
         }
-
+        
         public void Delete(Guid contentId)
         {
             DataService.Delete(contentId);
