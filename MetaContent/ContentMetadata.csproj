@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -54,6 +55,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Telligent.Evolution.Rest, Version=9.2.0.1667, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.Rest.dll</HintPath>
+    </Reference>
     <Reference Include="Telligent.Evolution.ScriptedContentFragments, Version=9.2.0.1667, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.ScriptedContentFragments.dll</HintPath>
@@ -61,6 +66,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\PublicApi.cs" />
+    <Compile Include="Api\RestApi.cs" />
+    <Compile Include="Api\RestResponse.cs" />
     <Compile Include="Api\WidgetApi.cs" />
     <Compile Include="CacheHelper.cs" />
     <Compile Include="ContentMetadata.cs" />
