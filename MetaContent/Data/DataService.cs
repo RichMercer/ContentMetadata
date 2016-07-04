@@ -144,7 +144,7 @@ namespace ContentMetadata.Data
             return item;
         }
 
-        public static IList<ContentMetadata> List(Guid contentId)
+        public static List<ContentMetadata> List(Guid contentId)
         {
             var items = new List<ContentMetadata>();
 
