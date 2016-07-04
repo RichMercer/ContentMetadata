@@ -50,6 +50,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.Components.dll</HintPath>
     </Reference>
+    <Reference Include="Telligent.Evolution.Core, Version=9.2.0.1667, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Telligent.Evolution.ScriptedContentFragments, Version=9.2.0.1667, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.ScriptedContentFragments.dll</HintPath>

@@ -1,3 +1,5 @@
+USE [metacontent.local]
+GO
 /***********************************************
 *   Install new Tables and Stored Procedures   */
 /***********************************************
@@ -64,23 +66,26 @@ CREATE PROCEDURE [dbo].[custom_MetaData_Set]
 		@DataValue		nvarchar(max)
 AS
 BEGIN
-	IF((SELECT 1 FROM [custom_MetaData] WHERE [ContentId] = @ContentId AND [DataKey] = @DataKey) > 0)
-		UPDATE 
-			[dbo].[custom_MetaData] SET [DataValue] = @DataValue
-		WHERE
-			[ContentId] = @ContentId AND
-			[DataKey] = @DataKey
+	IF(LEN(@DataValue) > 0)
+		IF((SELECT 1 FROM [custom_MetaData] WHERE [ContentId] = @ContentId AND [DataKey] = @DataKey) > 0)
+			UPDATE 
+				[dbo].[custom_MetaData] SET [DataValue] = @DataValue
+			WHERE
+				[ContentId] = @ContentId AND
+				[DataKey] = @DataKey
+		ELSE
+			INSERT INTO [dbo].[custom_MetaData]
+				([ContentId]
+				,[ContentTypeId]
+				,[DataKey]
+				,[DataValue])
+			 VALUES (
+				@ContentId,
+				@ContentTypeId,
+				@DataKey,
+				@DataValue)
 	ELSE
-		INSERT INTO [dbo].[custom_MetaData]
-			([ContentId]
-			,[ContentTypeId]
-			,[DataKey]
-			,[DataValue])
-		 VALUES (
-			@ContentId,
-			@ContentTypeId,
-			@DataKey,
-			@DataValue)
+		DELETE FROM [custom_MetaData] WHERE ContentId = @ContentId AND DataKey = @DataKey
 END
 GO
 
