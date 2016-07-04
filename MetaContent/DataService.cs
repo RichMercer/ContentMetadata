@@ -50,6 +50,27 @@ namespace MetaContent
             return Convert.ToBoolean(value);
         }
 
+        public static bool IsInstalled()
+        {
+            const string statement = @"SELECT 1 FROM SYS.OBJECTS WHERE OBJECT_ID = OBJECT_ID(N'[dbo].[custom_MetaData]') AND TYPE IN (N'U')";
+
+            int value;
+            using (var connection = GetSqlConnection())
+            {
+                connection.Open();
+
+                using (var command = new SqlCommand(statement, connection))
+                {
+                    var result = command.ExecuteScalar();
+                    
+                    int.TryParse(result?.ToString(), out value);
+                }
+                connection.Close();
+            }
+
+            return Convert.ToBoolean(value);
+        }
+
         #endregion
 
         #region IInstallablePlugin Methods
@@ -100,6 +121,45 @@ namespace MetaContent
 
         #endregion
 
+        public static ContentMeta Get(Guid contentId, string key)
+        {
+            ContentMeta item = null;
 
+            using (var connection = GetSqlConnection())
+            {
+                using (var command = CreateSprocCommand("[custom_MetaData_Get]", connection))
+                {
+                    command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
+                    command.Parameters.Add("@DataKey", SqlDbType.UniqueIdentifier).Value = key;
+
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader(CommandBehavior.SingleRow | CommandBehavior.CloseConnection))
+                    {
+                        if (reader.Read())
+                        {
+                            item = Populate(reader);
+                        }
+                    }
+
+                    connection.Close();
+                }
+            }
+
+            return item;
+        }
+
+        private static ContentMeta Populate(IDataReader reader)
+        {
+            var article = new ContentMeta
+            {
+                ContentId = reader["ContentId"] == null ? Guid.Empty : new Guid(reader["ContentId"].ToString()),
+                ContentTypeId = reader["ContentTypeId"] == null ? Guid.Empty : new Guid(reader["ContentTypeId"].ToString()),
+                Key = reader["DataKey"].ToString(),
+                Value = reader["DataValue"].ToString()
+            };
+
+            return article;
+        }
     }
 }
