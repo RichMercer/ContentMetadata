@@ -134,15 +134,13 @@ namespace MetaContent.Data
 
                     connection.Open();
 
-                    using (var reader = command.ExecuteReader(CommandBehavior.SingleRow | CommandBehavior.CloseConnection))
+                    using (var reader = command.ExecuteReader(CommandBehavior.SingleRow))
                     {
                         if (reader.Read())
                         {
                             item = Populate(reader);
                         }
                     }
-
-                    connection.Close();
                 }
             }
 

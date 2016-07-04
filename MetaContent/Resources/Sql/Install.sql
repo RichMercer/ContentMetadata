@@ -1,5 +1,3 @@
-﻿USE [metacontent.local]
-GO
 /***********************************************
 *   Install new Tables and Stored Procedures   */
 /***********************************************
