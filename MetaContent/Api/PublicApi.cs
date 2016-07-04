@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using ContentMetadata.Data;
 
 namespace ContentMetadata.Api
@@ -12,9 +11,11 @@ namespace ContentMetadata.Api
 
         public static PublicApi Instance => new PublicApi();
 
-        public IReadOnlyCollection<ContentMetadata> List(Guid contentId)
+        public IReadOnlyList<ContentMetadata> List(Guid contentId)
         {
-            return CacheHelper.Get(string.Format(CacheKey, contentId), () => new ReadOnlyCollection<ContentMetadata>(DataService.List(contentId)));
+            {
+                return CacheHelper.Get(string.Format(CacheKey, contentId), () => DataService.List(contentId));
+            }
         }
         public ContentMetadata Get(Guid contentId, string key)
         {

@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace ContentMetadata
 {
+    [Serializable]
     public class ContentMetadata
     {
         public ContentMetadata() { }
@@ -17,13 +17,17 @@ namespace ContentMetadata
             Key = key;
             Value = value;
         }
-        public Guid ContentId { get; }
 
-        public Guid ContentTypeId { get; }
+        public Guid ContentId { get; set; }
 
-        public string Key { get; }
+        [JsonProperty]
+        public Guid ContentTypeId { get; set; }
 
-        public string Value { get; }
+        [JsonProperty]
+        public string Key { get; set; }
+
+        [JsonProperty]
+        public string Value { get; set; }
 
         public bool GetBoolValue(bool defaultValue)
         {

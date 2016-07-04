@@ -25,7 +25,7 @@ namespace ContentMetadata.Api
 
             controller.Add(2, "metadata/{contentid}", HttpMethod.Get, req =>
             {
-                var response = new RestResponse { Name = "ContentMetaData" };
+                var response = new RestResponse { Name = "MetaData" };
 
                 try
                 {
@@ -45,7 +45,7 @@ namespace ContentMetadata.Api
 
             controller.Add(2, "metadata/{contentid}/{key}", HttpMethod.Get, req =>
             {
-                var response = new RestResponse { Name = "ContentMetaData" };
+                var response = new RestResponse { Name = "MetaData" };
 
                 try
                 {
