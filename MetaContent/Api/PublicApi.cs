@@ -7,19 +7,18 @@ namespace ContentMetadata.Api
 {
     public class PublicApi
     {
-        private const string CacheKey = "MetaData-ContentId:{0}-";
+        private const string CacheKey = "ContentMetadata-ContentId:{0}";
+        private const string ItemCacheKey = "ContentMetadata-ContentId:{0}-Key:{1}";
 
         public static PublicApi Instance => new PublicApi();
 
         public IReadOnlyCollection<ContentMetadata> List(Guid contentId)
         {
-            // TODO: Add caching
-            return new ReadOnlyCollection<ContentMetadata>(DataService.List(contentId));
+            return CacheHelper.Get(string.Format(CacheKey, contentId), () => new ReadOnlyCollection<ContentMetadata>(DataService.List(contentId)));
         }
         public ContentMetadata Get(Guid contentId, string key)
         {
-            // TODO: Add caching
-            return DataService.Get(contentId, key);
+            return CacheHelper.Get(string.Format(ItemCacheKey, contentId, key), () => DataService.Get(contentId, key));
         }
         
         public void Delete(Guid contentId)
@@ -29,9 +28,11 @@ namespace ContentMetadata.Api
 
         public void Set(Guid contentId, Guid contentTypeId, string key, string value)
         {
-            // TODO: Invalidate cache
-            // Consider invalidating List cache as well as Get.
             DataService.Set(contentId, contentTypeId, key, value);
+
+            // Invalidate the cache
+            CacheHelper.Remove(string.Format(CacheKey, contentId));
+            CacheHelper.Remove(string.Format(ItemCacheKey, contentId, key));
         }
     }
 }

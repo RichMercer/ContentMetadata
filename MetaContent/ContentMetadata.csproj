@@ -62,6 +62,7 @@
   <ItemGroup>
     <Compile Include="Api\PublicApi.cs" />
     <Compile Include="Api\WidgetApi.cs" />
+    <Compile Include="CacheHelper.cs" />
     <Compile Include="ContentMetadata.cs" />
     <Compile Include="Data\DataService.cs" />
     <Compile Include="Plugins\MetaContentPlugin.cs" />
