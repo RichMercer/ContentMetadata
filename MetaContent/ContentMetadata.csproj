@@ -7,8 +7,8 @@
     <ProjectGuid>{CFDD113A-9758-4902-A380-B289BBDDDE70}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MetaContent</RootNamespace>
-    <AssemblyName>MetaContent</AssemblyName>
+    <RootNamespace>ContentMetadata</RootNamespace>
+    <AssemblyName>ContentMetadata</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -58,7 +58,7 @@
   <ItemGroup>
     <Compile Include="Api\PublicApi.cs" />
     <Compile Include="Api\WidgetApi.cs" />
-    <Compile Include="ContentMeta.cs" />
+    <Compile Include="ContentMetadata.cs" />
     <Compile Include="Data\DataService.cs" />
     <Compile Include="Plugins\MetaContentPlugin.cs" />
     <Compile Include="Extensions\MetaExtensions.cs" />

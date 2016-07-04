@@ -1,10 +1,10 @@
 ﻿using Telligent.Evolution.Extensibility.UI.Version1;
 
-namespace MetaContent.Api
+namespace ContentMetadata.Api
 {
     public class WidgetApi : IScriptedContentFragmentExtension
     {
-        public string Name => "MetaContent Widget API";
+        public string Name => "ContentMetadata Widget API";
 
         public string Description => "Allows access to IContent MetaData from widgets.";
 

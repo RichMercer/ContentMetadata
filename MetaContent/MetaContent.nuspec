@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>TelligentMetaContent</id>
+    <id>TelligentContentMetadata</id>
     <version>1.0.0</version>
-    <title>MetaContent for Telligent Community</title>
+    <title>ContentMetadata for Telligent Community</title>
     <authors>RichMercer</authors>
     <owners>RichMercer</owners>
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
-    <projectUrl>https://github.com/RichMercer/MetaContent</projectUrl>
+    <projectUrl>https://github.com/RichMercer/ContentMetadata</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Adds support for adding custom, generic metadata to any entity that implements IContent. This includes Users, Groups, Applications (forums, blogs etc), Posts, and more.</description>
     <releaseNotes>Initial Release</releaseNotes>
@@ -15,7 +15,7 @@
     <dependencies />
   </metadata>
   <files>
-    <file src="bin\Release\MetaContent.dll" target="lib\net45\Telligent.SitecoreSDK.dll" />
+    <file src="bin\Release\ContentMetadata.dll" target="lib\net45\Telligent.SitecoreSDK.dll" />
   </files>
 
 </package>

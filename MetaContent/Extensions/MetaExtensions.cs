@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Telligent.Evolution.Components;
 
-namespace MetaContent.Extensions
+namespace ContentMetadata.Extensions
 {
     public static class MetaExtensions
     {

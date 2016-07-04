@@ -1,22 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using MetaContent.Api;
-using MetaContent.Data;
+using ContentMetadata.Api;
+using ContentMetadata.Data;
 using Telligent.DynamicConfiguration.Components;
 using Telligent.Evolution.Extensibility.Api.Version1;
 using Telligent.Evolution.Extensibility.Version1;
 using PublicApi = Telligent.Evolution.Extensibility.Api.Version1.PublicApi;
 
-namespace MetaContent.Plugins
+namespace ContentMetadata.Plugins
 {
-    public class MetaContentPlugin : IInstallablePlugin, IRequiredConfigurationPlugin, IPluginGroup
+    public class ContentMetadataPlugin : IInstallablePlugin, IRequiredConfigurationPlugin, IPluginGroup
     {
         private IPluginConfiguration Configuration { get; set; }
 
         #region IPlugin Members
 
-        public string Name => "MetaContent Plugin";
+        public string Name => "ContentMetadata Plugin";
 
         public string Description => "Adds support to for generic metadata to be added to IContent Entities.";
 

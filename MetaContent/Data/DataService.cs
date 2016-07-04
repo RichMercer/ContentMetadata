@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 using Telligent.Evolution.Components;
 using Telligent.Evolution.Extensibility.Api.Version1;
 
-namespace MetaContent.Data
+namespace ContentMetadata.Data
 {
     internal static class DataService
     {
@@ -79,7 +79,7 @@ namespace MetaContent.Data
         {
             if (!HasRequiredPermissions())
             {
-                EventLogs.Warn("Unable to install SQL scripts for plugin", "MetaContent", 3660);
+                EventLogs.Warn("Unable to install SQL scripts for plugin", "ContentMetadata", 3660);
                 return;
             }
 
@@ -106,7 +106,7 @@ namespace MetaContent.Data
 
         private static string GetStatementsFromSql()
         {
-            var stream = typeof(DataService).Assembly.GetManifestResourceStream("MetaContent.Resources.Sql.Install.sql");
+            var stream = typeof(DataService).Assembly.GetManifestResourceStream("ContentMetadata.Resources.Sql.Install.sql");
             if (stream == null || stream.Length == 0)
                 return string.Empty;
 
@@ -121,9 +121,9 @@ namespace MetaContent.Data
 
         #endregion
 
-        public static ContentMeta Get(Guid contentId, string key)
+        public static ContentMetadata Get(Guid contentId, string key)
         {
-            ContentMeta item = null;
+            ContentMetadata item = null;
 
             using (var connection = GetSqlConnection())
             {
@@ -147,9 +147,9 @@ namespace MetaContent.Data
             return item;
         }
 
-        public static IList<ContentMeta> List(Guid contentId)
+        public static IList<ContentMetadata> List(Guid contentId)
         {
-            var items = new List<ContentMeta>();
+            var items = new List<ContentMetadata>();
 
             using (var connection = GetSqlConnection())
             {
@@ -209,9 +209,9 @@ namespace MetaContent.Data
             }
         }
 
-        private static ContentMeta Populate(IDataReader reader)
+        private static ContentMetadata Populate(IDataReader reader)
         {
-            var article = new ContentMeta(
+            var article = new ContentMetadata(
                 reader["ContentId"] == null ? Guid.Empty : new Guid(reader["ContentId"].ToString()),
                 reader["ContentTypeId"] == null ? Guid.Empty : new Guid(reader["ContentTypeId"].ToString()),
                 reader["DataKey"].ToString(),

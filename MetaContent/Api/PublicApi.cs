@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using MetaContent.Data;
+using ContentMetadata.Data;
 
-namespace MetaContent.Api
+namespace ContentMetadata.Api
 {
     public class PublicApi
     {
@@ -11,12 +11,12 @@ namespace MetaContent.Api
 
         public static PublicApi Instance => new PublicApi();
 
-        public IReadOnlyCollection<ContentMeta> List(Guid contentId)
+        public IReadOnlyCollection<ContentMetadata> List(Guid contentId)
         {
             // TODO: Add caching
-            return new ReadOnlyCollection<ContentMeta>(DataService.List(contentId));
+            return new ReadOnlyCollection<ContentMetadata>(DataService.List(contentId));
         }
-        public ContentMeta Get(Guid contentId, string key)
+        public ContentMetadata Get(Guid contentId, string key)
         {
             // TODO: Add caching
             return DataService.Get(contentId, key);

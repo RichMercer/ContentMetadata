@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MetaContent
+namespace ContentMetadata
 {
-    public class ContentMeta
+    public class ContentMetadata
     {
-        public ContentMeta(Guid contentId, Guid contentTypeId, string key, string value)
+        public ContentMetadata(Guid contentId, Guid contentTypeId, string key, string value)
         {
             ContentId = contentId;
             ContentTypeId = contentTypeId;
