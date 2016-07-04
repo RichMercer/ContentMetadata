@@ -2,6 +2,7 @@
 using System.Reflection;
 using MetaContent.Data;
 using Telligent.DynamicConfiguration.Components;
+using Telligent.Evolution.Extensibility.Api.Version1;
 using Telligent.Evolution.Extensibility.Version1;
 
 namespace MetaContent.Plugins
@@ -18,6 +19,13 @@ namespace MetaContent.Plugins
 
         public void Initialize()
         {
+            PublicApi.Content.Events.AfterDelete += EventsOnAfterDelete;
+        }
+
+        private void EventsOnAfterDelete(ContentAfterDeleteEventArgs e)
+        {
+            // TODO: Consider moving to IEvolutionJob to avoid blocking UI
+            Api.PublicApi.Delete(e.ContentId);
         }
 
         #endregion

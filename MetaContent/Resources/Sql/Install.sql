@@ -42,6 +42,19 @@ GO
 GRANT EXECUTE ON [dbo].[custom_MetaData_Get] TO PUBLIC
 GO
 
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[custom_MetaData_List]') AND type in (N'P', N'PC'))
+	DROP PROCEDURE [dbo].[custom_MetaData_List]
+GO
+CREATE PROCEDURE [dbo].[custom_MetaData_List]
+		@ContentId		uniqueidentifier
+AS
+BEGIN
+	SELECT [ContentId], [ContentTypeId], [DataKey], [DataValue] FROM [custom_MetaData] WHERE [ContentId] = @ContentId
+END
+GO
+
+GRANT EXECUTE ON [dbo].[custom_MetaData_List] TO PUBLIC
+GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[custom_MetaData_Set]') AND type in (N'P', N'PC'))
 	DROP PROCEDURE [dbo].[custom_MetaData_Set]
@@ -74,4 +87,20 @@ END
 GO
 
 GRANT EXECUTE ON [dbo].[custom_MetaData_Set] TO PUBLIC
+GO
+
+
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[custom_MetaData_Delete]') AND type in (N'P', N'PC'))
+	DROP PROCEDURE [dbo].[custom_MetaData_Delete]
+GO
+CREATE PROCEDURE [dbo].[custom_MetaData_Delete]
+		@ContentId		uniqueidentifier
+AS
+BEGIN
+	DELETE FROM [custom_MetaData] WHERE ContentId = @ContentId
+END
+GO
+
+GRANT EXECUTE ON [dbo].[custom_MetaData_Delete] TO PUBLIC
 GO

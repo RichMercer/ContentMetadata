@@ -19,6 +19,11 @@ namespace MetaContent.Api
             return DataService.Get(contentId, key);
         }
 
+        public static void Delete(Guid contentId)
+        {
+            DataService.Delete(contentId);
+        }
+
         public static ContentMeta Set(Guid contentId, string key, string value)
         {
             // TODO: Invalidate cache

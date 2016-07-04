@@ -178,6 +178,21 @@ namespace MetaContent.Data
             return items;
         }
 
+        public static void Delete(Guid contentId)
+        {
+            using (var connection = GetSqlConnection())
+            {
+                using (var command = CreateSprocCommand("[custom_MetaData_Delete]", connection))
+                {
+                    command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+        }
+
         public static ContentMeta Set(Guid contentId, string key, string value)
         {
             ContentMeta item = null;
