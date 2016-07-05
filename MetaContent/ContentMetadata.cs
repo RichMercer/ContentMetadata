@@ -18,16 +18,13 @@ namespace ContentMetadata
             Value = value;
         }
 
-        public Guid ContentId { get; set; }
+        public Guid ContentId { get; }
 
-        [JsonProperty]
-        public Guid ContentTypeId { get; set; }
+        public Guid ContentTypeId { get; }
 
-        [JsonProperty]
-        public string Key { get; set; }
+        public string Key { get; }
 
-        [JsonProperty]
-        public string Value { get; set; }
+        public string Value { get; }
 
         public bool GetBoolValue(bool defaultValue)
         {
@@ -46,5 +43,27 @@ namespace ContentMetadata
 
             return defaultValue;
         }
+    }
+
+    [Serializable]
+    public class RestContentMetadata
+    {
+        public RestContentMetadata() { }
+
+        public RestContentMetadata(ContentMetadata metadata)
+        {
+            ContentId = metadata.ContentId;
+            ContentTypeId = metadata.ContentTypeId;
+            Key = metadata.Key;
+            Value = metadata.Value;
+        }
+
+        public Guid ContentId { get; set; }
+
+        public Guid ContentTypeId { get; set; }
+
+        public string Key { get; set; }
+
+        public string Value { get; set; }
     }
 }

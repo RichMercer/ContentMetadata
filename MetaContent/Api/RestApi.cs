@@ -25,7 +25,7 @@ namespace ContentMetadata.Api
 
             controller.Add(2, "metadata/{contentid}", HttpMethod.Get, req =>
             {
-                var response = new RestResponse { Name = "MetaData" };
+                var response = new RestResponse { Name = "ContentMetadata" };
 
                 try
                 {
@@ -34,7 +34,8 @@ namespace ContentMetadata.Api
                     if (param == null || !Guid.TryParse(param.ToString(), out contentId))
                         throw new ArgumentException("ContentId is required.");
 
-                    response.Data = PublicApi.Instance.List(contentId);
+                    var items = PublicApi.Instance.List(contentId);
+                    response.Data = items.Select(x => new RestContentMetadata(x)).ToList();
                 }
                 catch (Exception ex)
                 {
@@ -45,7 +46,7 @@ namespace ContentMetadata.Api
 
             controller.Add(2, "metadata/{contentid}/{key}", HttpMethod.Get, req =>
             {
-                var response = new RestResponse { Name = "MetaData" };
+                var response = new RestResponse { Name = "ContentMetadata" };
 
                 try
                 {
@@ -65,7 +66,7 @@ namespace ContentMetadata.Api
                     }
                     else
                     {
-                        response.Data = item;
+                        response.Data = new RestContentMetadata(item);
                     }
                 }
                 catch (Exception ex)
