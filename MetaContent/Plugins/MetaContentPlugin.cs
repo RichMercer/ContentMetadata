@@ -74,16 +74,11 @@ namespace ContentMetadata.Plugins
 
         #region IPluginGroup Members
 
-        public IEnumerable<Type> Plugins
+        public IEnumerable<Type> Plugins => new[]
         {
-            get
-            {
-                return new[]
-                {
-                    typeof (WidgetApi)
-                };
-            }
-        }
+            typeof (WidgetApi),
+            typeof(RestApi)
+        };
 
         #endregion
 

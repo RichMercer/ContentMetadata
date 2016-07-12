@@ -185,7 +185,22 @@ namespace ContentMetadata.Data
             }
         }
 
-        public static void Set(Guid contentId, Guid contentTypeId, string key, string value)
+        public static void Delete(Guid contentId, string key)
+        {
+            using (var connection = GetSqlConnection())
+            {
+                using (var command = CreateSprocCommand("[custom_MetaData_Delete_Key]", connection))
+                {
+                    command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
+                    command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public static ContentMetadata Set(Guid contentId, Guid contentTypeId, string key, string value)
         {
             using (var connection = GetSqlConnection())
             {
@@ -197,9 +212,17 @@ namespace ContentMetadata.Data
                     command.Parameters.Add("@DataValue", SqlDbType.Text).Value = value;
 
                     connection.Open();
-                    command.ExecuteNonQuery();
+                    using (var reader = command.ExecuteReader(CommandBehavior.SingleRow))
+                    {
+                        if (reader.Read())
+                        {
+                            return Populate(reader);
+                        }
+                    }
                 }
             }
+
+            return new ContentMetadata();
         }
 
         private static ContentMetadata Populate(IDataReader reader)

@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.Serialization;
+using System.Xml.Serialization;
+using Newtonsoft.Json;
 
 namespace ContentMetadata
 {
+    [Serializable]
     public class ContentMetadata
     {
         public ContentMetadata() { }
@@ -17,6 +17,7 @@ namespace ContentMetadata
             Key = key;
             Value = value;
         }
+
         public Guid ContentId { get; }
 
         public Guid ContentTypeId { get; }
@@ -42,5 +43,27 @@ namespace ContentMetadata
 
             return defaultValue;
         }
+    }
+
+    [Serializable]
+    public class RestContentMetadata
+    {
+        public RestContentMetadata() { }
+
+        public RestContentMetadata(ContentMetadata metadata)
+        {
+            ContentId = metadata.ContentId;
+            ContentTypeId = metadata.ContentTypeId;
+            Key = metadata.Key;
+            Value = metadata.Value;
+        }
+
+        public Guid ContentId { get; set; }
+
+        public Guid ContentTypeId { get; set; }
+
+        public string Key { get; set; }
+
+        public string Value { get; set; }
     }
 }
