@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Telligent.Evolution.Extensibility.Rest.Infrastructure.Version1;
 using Telligent.Evolution.Extensibility.Rest.Version2;
 using HttpMethod = Telligent.Evolution.Extensibility.Rest.Version2.HttpMethod;
 
@@ -73,6 +69,73 @@ namespace ContentMetadata.Api
                 {
                     response.Errors = new[] { ex.Message };
                 }
+                return response;
+            });
+
+            #endregion
+
+            #region POST
+
+            controller.Add(2, "metadata", HttpMethod.Post, req =>
+            {
+                var response = new RestResponse { Name = "ContentMetadata" };
+
+                try
+                {
+                    Guid contentId;
+                    if (!Guid.TryParse(req.Request.Params["ContentId"] ?? string.Empty, out contentId))
+                        throw new ArgumentException("ContentId is required.");
+
+                    Guid contentTypeId;
+                    if (!Guid.TryParse(req.Request.Params["ContentTypeId"] ?? string.Empty, out contentTypeId))
+                        throw new ArgumentException("ContentTypeId is required.");
+
+                    var key = req.Request.Params["Key"] ?? string.Empty;
+                    if (string.IsNullOrEmpty(key))
+                        throw new ArgumentException("Key is required.");
+
+                    var value = req.Request.Params["Value"] ?? string.Empty;
+                    if (string.IsNullOrEmpty(value))
+                        throw new ArgumentException("Value is required.");
+
+
+                    var item = PublicApi.Instance.Set(contentId, contentTypeId, key, value);
+
+                    response.Data = new RestContentMetadata(item);
+                }
+                catch (Exception ex)
+                {
+                    response.Errors = new[] { ex.Message };
+                }
+
+                return response;
+            });
+
+            #endregion
+
+            #region DELETE
+
+            controller.Add(2, "metadata", HttpMethod.Delete, req =>
+            {
+                var response = new RestResponse { Name = "ContentMetadata" };
+
+                try
+                {
+                    Guid contentId;
+                    if (!Guid.TryParse(req.Request.Params["ContentId"] ?? string.Empty, out contentId))
+                        throw new ArgumentException("ContentId is required.");
+
+                    var key = req.Request.Params["Key"] ?? string.Empty;
+                    if (string.IsNullOrEmpty(key))
+                        throw new ArgumentException("Key is required.");
+
+                    PublicApi.Instance.Delete(contentId, key);
+                }
+                catch (Exception ex)
+                {
+                    response.Errors = new[] { ex.Message };
+                }
+
                 return response;
             });
 
