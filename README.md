@@ -20,7 +20,8 @@ To access the API's, you will need to enable the plugin `ContentMetadata Plugin`
 
 Each of the 3 API's use the same base implementation meaning you get a consisisten set of abilities. Each provides the ability to List, Get, Set and Delete metadata associated with an IContent entity.
 
-## PublicApi
+## InProcess API
+The InProcess API can be used to set and access metadata using C# in plugins or other custom code.
 
 ### List Metadata
 
@@ -41,3 +42,27 @@ Each of the 3 API's use the same base implementation meaning you get a consisist
 or
 
 `Apis.Get<IContentMetadataApi>().Delete(contentId, key);` - Delete a specific piece of metadata based on the key.
+
+## Widget API
+
+The widget API exposes the same commands as above using Velocity extensions.
+
+### List Metadata
+
+`#set($response = $metadata_v1_content.List($contentId))`
+
+### Get Metadata
+
+`#set($response = $metadata_v1_content.Get($contentId, $key))`
+
+### Set Metadata
+
+`#set($reponse = $metadata_v1_content.Set($contentId, $contentTypeId, $key, $value))`
+
+### Delete Metadata
+
+`$metadata_v1_content.Delete($contentId)` - Deletes all metadata for a piece of content.
+
+or
+
+`$metadata_v1_content.Delete($contentId, $key)` - Delete a specific piece of metadata based on the key.
