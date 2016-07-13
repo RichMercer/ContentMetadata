@@ -4,9 +4,9 @@ using System.Reflection;
 using ContentMetadata.Api;
 using ContentMetadata.Data;
 using Telligent.DynamicConfiguration.Components;
+using Telligent.Evolution.Extensibility;
 using Telligent.Evolution.Extensibility.Api.Version1;
 using Telligent.Evolution.Extensibility.Version1;
-using PublicApi = Telligent.Evolution.Extensibility.Api.Version1.PublicApi;
 
 namespace ContentMetadata.Plugins
 {
@@ -22,13 +22,13 @@ namespace ContentMetadata.Plugins
 
         public void Initialize()
         {
-            PublicApi.Content.Events.AfterDelete += EventsOnAfterDelete;
+            Apis.Get<IContents>().Events.AfterDelete += EventsOnAfterDelete;
         }
 
         private void EventsOnAfterDelete(ContentAfterDeleteEventArgs e)
         {
             // TODO: Consider moving to IEvolutionJob to avoid blocking UI
-            Api.PublicApi.Instance.Delete(e.ContentId);
+            Apis.Get<IContentMetadataApi>().Delete(e.ContentId);
         }
 
         #endregion
@@ -77,7 +77,8 @@ namespace ContentMetadata.Plugins
         public IEnumerable<Type> Plugins => new[]
         {
             typeof (WidgetApi),
-            typeof(RestApi)
+            typeof (RestApi),
+            typeof (InProcessApi)
         };
 
         #endregion

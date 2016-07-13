@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ContentMetadata.Api;
+using Telligent.Evolution.Extensibility;
 using Telligent.Evolution.Extensibility.Content.Version1;
 
 namespace ContentMetadata.Extensions
@@ -9,12 +10,12 @@ namespace ContentMetadata.Extensions
         public static IReadOnlyCollection<ContentMetadata> GetMetadata(this IContent content)
         {
             // TODO: Get items here and cache.
-            return PublicApi.Instance.List(content.ContentId);
+            return Apis.Get<IContentMetadataApi>().List(content.ContentId);
         }
 
         public static string GetMetadata(this IContent content, string key)
         {
-            return PublicApi.Instance.Get(content.ContentId, key).Value;
+            return Apis.Get<IContentMetadataApi>().Get(content.ContentId, key).Value;
         }
 
         public static int GetMetadataInt(this IContent content, string key, int defaultValue)
@@ -37,7 +38,7 @@ namespace ContentMetadata.Extensions
 
         public static void SetMetadata(this IContent content, string key, string value)
         {
-            PublicApi.Instance.Set(content.ContentId, content.ContentTypeId, key, value);
+            Apis.Get<IContentMetadataApi>().Set(content.ContentId, content.ContentTypeId, key, value);
         }
     }
 }

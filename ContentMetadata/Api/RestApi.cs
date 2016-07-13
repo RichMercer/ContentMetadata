@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Xml.Serialization;
+using Telligent.Evolution.Extensibility;
 using Telligent.Evolution.Extensibility.Rest.Version2;
 using HttpMethod = Telligent.Evolution.Extensibility.Rest.Version2.HttpMethod;
 
@@ -35,7 +36,7 @@ namespace ContentMetadata.Api
 
                     if (!string.IsNullOrEmpty(key))
                     {
-                        var item = PublicApi.Instance.Get(contentId, key);
+                        var item = Apis.Get<IContentMetadataApi>().Get(contentId, key);
                         if (string.IsNullOrEmpty(item.Value))
                         {
                             response.Errors = new[] { "Content Metadata Not Found." };
@@ -47,7 +48,7 @@ namespace ContentMetadata.Api
                     }
                     else
                     {
-                        var items = PublicApi.Instance.List(contentId);
+                        var items = Apis.Get<IContentMetadataApi>().List(contentId);
                         response.Data = items.Select(x => new RestContentMetadata(x)).ToList();
                     }
                 }
@@ -85,7 +86,7 @@ namespace ContentMetadata.Api
                         throw new ArgumentException("Value is required.");
 
 
-                    var item = PublicApi.Instance.Set(contentId, contentTypeId, key, value);
+                    var item = Apis.Get<IContentMetadataApi>().Set(contentId, contentTypeId, key, value);
 
                     response.Data = new RestContentMetadata(item);
                 }
@@ -115,7 +116,7 @@ namespace ContentMetadata.Api
                     if (string.IsNullOrEmpty(key))
                         throw new ArgumentException("Key is required.");
 
-                    PublicApi.Instance.Delete(contentId, key);
+                    Apis.Get<IContentMetadataApi>().Delete(contentId, key);
                 }
                 catch (Exception ex)
                 {
