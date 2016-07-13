@@ -23,19 +23,19 @@ Each of the 3 API's use the same base implementation meaning you get a consisist
 ## InProcess API
 The InProcess API can be used to set and access metadata using C# in plugins or other custom code.
 
-### List Metadata
+### List
 
 `var metadata = Apis.Get<IContentMetadataApi>().List(contentId);`
 
-### Get Metadata
+### Get
 
 `var metadata = Apis.Get<IContentMetadataApi>().Get(contentId, key);`
 
-### Set Metadata
+### Set
 
 `var metadata = Apis.Get<IContentMetadataApi>().Set(contentId, contentTypeId, key, value);`
 
-### Delete Metadata
+### Delete
 
 `Apis.Get<IContentMetadataApi>().Delete(contentId);` - Deletes all metadata for a piece of content.
 
@@ -47,19 +47,19 @@ or
 
 The widget API exposes the same commands as above using Velocity extensions.
 
-### List Metadata
+### List
 
 `#set($response = $metadata_v1_content.List($contentId))`
 
-### Get Metadata
+### Get
 
 `#set($response = $metadata_v1_content.Get($contentId, $key))`
 
-### Set Metadata
+### Set
 
 `#set($reponse = $metadata_v1_content.Set($contentId, $contentTypeId, $key, $value))`
 
-### Delete Metadata
+### Delete
 
 `$metadata_v1_content.Delete($contentId)` - Deletes all metadata for a piece of content.
 
