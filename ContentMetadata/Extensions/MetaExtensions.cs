@@ -6,7 +6,7 @@ namespace ContentMetadata.Extensions
 {
     public static class MetaExtensions
     {
-        public static IReadOnlyCollection<ContentMetadata> ListMetadata(this IContent content)
+        public static IReadOnlyCollection<ContentMetadata> GetMetadata(this IContent content)
         {
             // TODO: Get items here and cache.
             return PublicApi.Instance.List(content.ContentId);

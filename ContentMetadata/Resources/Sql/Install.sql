@@ -25,21 +25,6 @@ BEGIN
 END
 GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[custom_Metadata_Get]') AND type in (N'P', N'PC'))
-	DROP PROCEDURE [dbo].[custom_Metadata_Get]
-GO
-CREATE PROCEDURE [dbo].[custom_Metadata_Get]
-		@ContentId		uniqueidentifier,
-		@DataKey		nvarchar(64)
-AS
-BEGIN
-	SELECT [ContentId], [ContentTypeId], [DataKey], [DataValue] FROM [custom_Metadata] WHERE [ContentId] = @ContentId AND [DataKey] = @DataKey
-END
-GO
-
-GRANT EXECUTE ON [dbo].[custom_Metadata_Get] TO PUBLIC
-GO
-
 IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[custom_Metadata_List]') AND type in (N'P', N'PC'))
 	DROP PROCEDURE [dbo].[custom_Metadata_List]
 GO

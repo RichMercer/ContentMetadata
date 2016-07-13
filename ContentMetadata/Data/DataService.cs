@@ -118,32 +118,6 @@ namespace ContentMetadata.Data
 
         #endregion
 
-        public static ContentMetadata Get(Guid contentId, string key)
-        {
-            var item = new ContentMetadata();
-
-            using (var connection = GetSqlConnection())
-            {
-                using (var command = CreateSprocCommand("[custom_MetaData_Get]", connection))
-                {
-                    command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
-                    command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
-
-                    connection.Open();
-
-                    using (var reader = command.ExecuteReader(CommandBehavior.SingleRow))
-                    {
-                        if (reader.Read())
-                        {
-                            item = Populate(reader);
-                        }
-                    }
-                }
-            }
-
-            return item;
-        }
-
         public static List<ContentMetadata> List(Guid contentId)
         {
             var items = new List<ContentMetadata>();

@@ -31,39 +31,24 @@ namespace ContentMetadata.Api
                     if (param == null || !Guid.TryParse(param.ToString(), out contentId))
                         throw new ArgumentException("ContentId is required.");
 
-                    var items = PublicApi.Instance.List(contentId);
-                    response.Data = items.Select(x => new RestContentMetadata(x)).ToList();
-                }
-                catch (Exception ex)
-                {
-                    response.Errors = new[] { ex.Message };
-                }
-                return response;
-            });
+                    var key = req.Request.Params["Key"] ?? string.Empty;
 
-            controller.Add(2, "metadata/{contentid}/{key}", HttpMethod.Get, req =>
-            {
-                var response = new RestResponse { Name = "ContentMetadata" };
-
-                try
-                {
-                    Guid contentId;
-                    var param = req.PathParameters["contentid"];
-                    if (param == null || !Guid.TryParse(param.ToString(), out contentId))
-                        throw new ArgumentException("ContentId is required.");
-
-                    var key = req.PathParameters["key"]?.ToString();
-                    if (key == null)
-                        throw new ArgumentException("Key is required.");
-
-                    var item = PublicApi.Instance.Get(contentId, key);
-                    if (string.IsNullOrEmpty(item?.Value))
+                    if (!string.IsNullOrEmpty(key))
                     {
-                        response.Errors = new[] { "Metadata Not Found." };
+                        var item = PublicApi.Instance.Get(contentId, key);
+                        if (string.IsNullOrEmpty(item.Value))
+                        {
+                            response.Errors = new[] { "Content Metadata Not Found." };
+                        }
+                        else
+                        {
+                            response.Data = new RestContentMetadata(item);
+                        }
                     }
                     else
                     {
-                        response.Data = new RestContentMetadata(item);
+                        var items = PublicApi.Instance.List(contentId);
+                        response.Data = items.Select(x => new RestContentMetadata(x)).ToList();
                     }
                 }
                 catch (Exception ex)
