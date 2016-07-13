@@ -5,13 +5,39 @@ Although ExtendedAttributes have proved useful, they have many limitations.
 * When too much data is stored against an object performance can be affected.
 * Lookup based on ExtendedAttributes is not possible due to lack of API filtering.
 
-This project seeks to solve these problem by saving metadata in its own table and exposes a full InProcess API, Widget API via Velocity extensions and a RESTful API.
+This project seeks to solve these problem by saving metadata in its own table and exposes a full InProcess API, Widget API via Velocity extensions and a RESTful API. The plugin uses a custom SQL table to store the custom metadata which will allow for more functionality to be added in the future.
 
 # Installation
 To add ContentMetadata to your project, you can add it via nuget.
 
 * `Install-Package TelligentContentMetadata`
 
-To access the REST API and Velocity extensions, you will need to enable the plugin in your Community. The plugin uses a custom SQL table to store the custom metadata. If your sites connection string has dbowner access to your database, the install script will be run automatically when the plugin is enabled. If not, or you would prefer to run the script yourself, you can execute the SQL file here.
+To access the API's, you will need to enable the plugin `ContentMetadata Plugin` in your Telligent Community instance. If your sites' connection string has dbowner access to your database, the install script will be run automatically when the plugin is enabled. If not, or you would prefer to run the script yourself, you can execute the SQL file here.
 
 * [SQL Install Script](https://raw.githubusercontent.com/RichMercer/ContentMetadata/master/ContentMetadata/Resources/Sql/Install.sql)
+
+# Usage
+
+Each of the 3 API's use the same base implementation meaning you get a consisisten set of abilities. Each provides the ability to List, Get, Set and Delete metadata associated with an IContent entity.
+
+## PublicApi
+
+### List Metadata
+
+`var metadata = Apis.Get<IContentMetadataApi>().List(contentId);`
+
+### Get Metadata
+
+`var metadata = Apis.Get<IContentMetadataApi>().Get(contentId, key);`
+
+### Set Metadata
+
+`var metadata = Apis.Get<IContentMetadataApi>().Set(contentId, contentTypeId, key, value);`
+
+### Delete Metadata
+
+`Apis.Get<IContentMetadataApi>().Delete(contentId);` - Deletes all metadata for a piece of content.
+
+or
+
+`Apis.Get<IContentMetadataApi>().Delete(contentId, key);` - Delete a specific piece of metadata based on the key.
