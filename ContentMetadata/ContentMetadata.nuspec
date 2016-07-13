@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>RichMercer</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/RichMercer/ContentMetadata/blob/master/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/RichMercer/ContentMetadata</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>ContentMetadata for Telligent Community adds support for Metadata on Telligent Community IContent entities. It was built as a replacement for ExtendedAttributes for developers who were using them to store their own custom data.</description>
+    <releaseNotes>Initial release.</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <tags>Telligent Community IContent Metadata ExtendedAttributes</tags>
+  </metadata>
+</package>
