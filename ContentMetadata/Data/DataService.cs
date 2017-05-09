@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using Telligent.Evolution.Components;
+using Telligent.Evolution.Extensibility;
 using Telligent.Evolution.Extensibility.Api.Version1;
 
 namespace ContentMetadata.Data
@@ -77,7 +77,7 @@ namespace ContentMetadata.Data
         {
             if (!HasRequiredPermissions())
             {
-                EventLogs.Warn("Unable to install SQL scripts for plugin", "ContentMetadata", 3660);
+                Apis.Get<IEventLog>().Write("Unable to install SQL scripts for plugin", new EventLogEntryWriteOptions { EventType = "Warning", Category = "ContentMetadata", EventId = 3660 });
                 return;
             }
 

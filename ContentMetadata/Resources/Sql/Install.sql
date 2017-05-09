@@ -10,7 +10,7 @@ BEGIN
 		[ContentTypeId] [uniqueidentifier] NOT NULL,
 		[DataKey] [nvarchar](64) NOT NULL,
 		[DataValue] [nvarchar](max) NOT NULL,
-		CONSTRAINT [PK_custom_Metadata] PRIMARY KEY CLUSTERED 
+		CONSTRAINT [PK_custom_Metadata1] PRIMARY KEY CLUSTERED 
 		(
 			[ContentId] ASC,
 			[DataKey] ASC

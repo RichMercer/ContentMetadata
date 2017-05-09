@@ -28,8 +28,7 @@ namespace ContentMetadata
 
         public bool GetBoolValue(bool defaultValue)
         {
-            bool outValue;
-            if (!string.IsNullOrEmpty(Value) && bool.TryParse(Value, out outValue))
+            if (!string.IsNullOrEmpty(Value) && bool.TryParse(Value, out var outValue))
                 return outValue;
 
             return defaultValue;
