@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ContentMetadata</RootNamespace>
     <AssemblyName>ContentMetadata</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,9 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\references\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -46,27 +48,12 @@
     <Reference Include="System.Xml" />
     <Reference Include="Telligent.DynamicConfiguration, Version=0.1.26.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.DynamicConfiguration.dll</HintPath>
+      <HintPath>..\references\Telligent.DynamicConfiguration.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="Telligent.Evolution.Api, Version=9.2.0.1667, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.Api.dll</HintPath>
-    </Reference>
-    <Reference Include="Telligent.Evolution.Components, Version=9.2.0.1667, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.Components.dll</HintPath>
-    </Reference>
-    <Reference Include="Telligent.Evolution.Core, Version=9.2.0.1667, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Telligent.Evolution.Rest, Version=9.2.0.1667, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.Rest.dll</HintPath>
-    </Reference>
-    <Reference Include="Telligent.Evolution.ScriptedContentFragments, Version=9.2.0.1667, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\dev\TIM\Communities\metacontent.local\Web\bin\Telligent.Evolution.ScriptedContentFragments.dll</HintPath>
+    <Reference Include="Telligent.Evolution.Platform">
+      <HintPath>..\references\Telligent.Evolution.Platform.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>

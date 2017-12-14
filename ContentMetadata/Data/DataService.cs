@@ -16,7 +16,7 @@ namespace ContentMetadata.Data
 
         private static SqlConnection GetSqlConnection()
         {
-            return PublicApi.DatabaseConnections.GetConnection("SiteSqlServer");
+            return Apis.Get<IDatabaseConnections>().GetConnection("SiteSqlServer");
         }
 
         private static SqlCommand CreateSprocCommand(string sprocName, SqlConnection connection)
