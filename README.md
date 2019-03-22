@@ -1,5 +1,6 @@
 # TelligentContentMetadata
-ContentMetadata for Telligent Community adds support for Metadata on Telligent Community IContent entities. It acts as a store for Key/Value pairs of information and was built as a replacement for using ExtendedAttributes for developers who were using them to store their own custom data.
+ContentMetadata for Telligent Community adds support for Metadata on Telligent Community IContent entities. It acts as a store for Key/Value pairs of information and was built as a replacement for using ExtendedAttributes for developers who were using them to store their own custom data. Using the ContentId for an entity, Key/Value pairs can be stored linked to the content original content.
+
 Although ExtendedAttributes have proved useful, they have many limitations. 
 * They are not available on all entities (e.g. wikis, comments etc.).
 * When too much data is stored against an object performance can be affected.
@@ -20,7 +21,7 @@ To access the API's, you will need to enable the plugin `ContentMetadata Plugin`
 
 # Usage
 
-Each of the 3 API's use the same base implementation meaning you get a consisisten set of abilities. Each provides the ability to List, Get, Set and Delete metadata associated with an IContent entity.
+Each of the 3 API's use the same base implementation meaning you get a consisisten set of abilities. Each provides the ability to List, Get, Set and Delete metadata associated with an IContent entity. In all cases the ContentId of the content you are storing data against must be provided. Currently there is no REST API due to concerns around information disclosure. I am looking at ways to secure the access to ContentMetada calls inline with the platforms own checks on permissions.
 
 ## InProcess API
 The InProcess API can be used to set and access metadata using C# in plugins or other custom code.
@@ -86,3 +87,19 @@ or
 ```velocity
 $metadata_v1_content.Delete($contentId, $key) #Delete a specific piece of metadata based on the key.
 ```
+
+## Supported Entities
+Below is a list of entities that implement IContent. The list shows commonly used classes but isn't exhaustive.
+Achievement
+Comment
+Content
+ContentPage
+Conversation
+ConversationMessage
+ExternalMessage
+Group
+GroupUser
+Leaderboard
+StatusMessage
+Tweet
+User
