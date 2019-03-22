@@ -90,16 +90,31 @@ $metadata_v1_content.Delete($contentId, $key) #Delete a specific piece of metada
 
 ## Supported Entities
 Below is a list of entities that implement IContent. The list shows commonly used classes but isn't exhaustive.
-Achievement
-Comment
-Content
-ContentPage
-Conversation
-ConversationMessage
-ExternalMessage
-Group
-GroupUser
-Leaderboard
-StatusMessage
-Tweet
-User
+* Achievement
+* Blog
+* BlogPost
+* Calendar
+* Event
+* KnowledgeCollection
+* Document
+* Challenge
+* Idea
+* Comment
+* Content
+* ContentPage
+* Conversation
+* ConversationMessage
+* ExternalMessage
+* Forum
+* ForumReply
+* ForumThread
+* Gallery
+* Media
+* Group
+* GroupUser
+* Leaderboard
+* StatusMessage
+* Tweet
+* User
+* Wiki
+* WikiPage
