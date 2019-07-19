@@ -10,8 +10,8 @@
     <projectUrl>https://github.com/RichMercer/ContentMetadata</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>ContentMetadata for Telligent Community adds support for Metadata on Telligent Community IContent entities. It was built as a replacement for ExtendedAttributes for developers who were using them to store their own custom data.</description>
-    <releaseNotes>Initial release.</releaseNotes>
-    <copyright>Copyright 2016</copyright>
+    <releaseNotes>Updated to support Telligent Community 10.1.</releaseNotes>
+    <copyright>Copyright 2019</copyright>
     <tags>Telligent Community IContent Metadata ExtendedAttributes</tags>
   </metadata>
 </package>

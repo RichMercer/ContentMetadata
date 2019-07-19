@@ -139,6 +139,8 @@ namespace ContentMetadata.Data
                         // Done with the reader and the connection
                         dr.Close();
                     }
+
+                    connection.Close();
                 }
             }
 
@@ -155,6 +157,7 @@ namespace ContentMetadata.Data
 
                     connection.Open();
                     command.ExecuteNonQuery();
+                    connection.Close();
                 }
             }
         }
@@ -170,6 +173,7 @@ namespace ContentMetadata.Data
 
                     connection.Open();
                     command.ExecuteNonQuery();
+                    connection.Close();
                 }
             }
         }
@@ -193,6 +197,7 @@ namespace ContentMetadata.Data
                             return Populate(reader);
                         }
                     }
+                    connection.Close();
                 }
             }
 

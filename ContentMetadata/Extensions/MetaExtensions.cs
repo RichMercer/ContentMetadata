@@ -9,19 +9,19 @@ namespace ContentMetadata.Extensions
     {
         public static IReadOnlyCollection<ContentMetadata> GetMetadata(this IContent content)
         {
-            // TODO: Get items here and cache.
-            return Apis.Get<IContentMetadataApi>().List(content.ContentId);
+            var cacheKey = $"GetMetadata-contentId:{content.ContentId}";
+            return CacheHelper.Get(cacheKey, () => Apis.Get<IContentMetadataApi>().List(content.ContentId));
         }
 
         public static string GetMetadata(this IContent content, string key)
         {
-            return Apis.Get<IContentMetadataApi>().Get(content.ContentId, key).Value;
+            var cacheKey = $"GetMetadata-contentId:{content.ContentId}-key:{key}";
+            return CacheHelper.Get(cacheKey, () => Apis.Get<IContentMetadataApi>().Get(content.ContentId, key).Value);
         }
 
         public static int GetMetadataInt(this IContent content, string key, int defaultValue)
         {
-            int outValue;
-            if (!string.IsNullOrEmpty(content.GetMetadata(key)) && int.TryParse(content.GetMetadata(key), out outValue))
+            if (!string.IsNullOrEmpty(content.GetMetadata(key)) && int.TryParse(content.GetMetadata(key), out var outValue))
                 return outValue;
 
             return defaultValue;
@@ -29,8 +29,7 @@ namespace ContentMetadata.Extensions
 
         public static bool GetMetadataBool(this IContent content, string key, bool defaultValue)
         {
-            bool outValue;
-            if (!string.IsNullOrEmpty(content.GetMetadata(key)) && bool.TryParse(content.GetMetadata(key), out outValue))
+            if (!string.IsNullOrEmpty(content.GetMetadata(key)) && bool.TryParse(content.GetMetadata(key), out var outValue))
                 return outValue;
 
             return defaultValue;

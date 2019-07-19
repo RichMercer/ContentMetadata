@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Runtime.Serialization;
-using System.Xml.Serialization;
-using Newtonsoft.Json;
 
 namespace ContentMetadata
 {
@@ -36,8 +33,7 @@ namespace ContentMetadata
 
         public int GetIntValue(int defaultValue)
         {
-            int outValue;
-            if (!string.IsNullOrEmpty(Value) && int.TryParse(Value, out outValue))
+            if (!string.IsNullOrEmpty(Value) && int.TryParse(Value, out var outValue))
                 return outValue;
 
             return defaultValue;
