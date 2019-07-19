@@ -6,7 +6,7 @@
     <title>$title$</title>
     <authors>RichMercer</authors>
     <owners>$author$</owners>
-    <licenseUrl>https://github.com/RichMercer/ContentMetadata/blob/master/LICENSE.md</licenseUrl>
+    <license type="expression">MIT</license>
     <projectUrl>https://github.com/RichMercer/ContentMetadata</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>ContentMetadata for Telligent Community adds support for Metadata on Telligent Community IContent entities. It was built as a replacement for ExtendedAttributes for developers who were using them to store their own custom data.</description>
