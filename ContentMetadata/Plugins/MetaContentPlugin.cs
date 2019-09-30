@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.Reflection;
 using ContentMetadata.Api;
 using ContentMetadata.Data;
-using Telligent.DynamicConfiguration.Components;
 using Telligent.Evolution.Extensibility;
 using Telligent.Evolution.Extensibility.Api.Version1;
 using Telligent.Evolution.Extensibility.Version1;
+using Property = Telligent.Evolution.Extensibility.Configuration.Version1.Property;
+using PropertyGroup = Telligent.Evolution.Extensibility.Configuration.Version1.PropertyGroup;
 
 namespace ContentMetadata.Plugins
 {
-    public class ContentMetadataPlugin : IInstallablePlugin, IRequiredConfigurationPlugin, IPluginGroup
+    public class ContentMetadataPlugin : IInstallablePlugin, Telligent.Evolution.Extensibility.Version2.IConfigurablePlugin, IPluginGroup
     {
-        private IPluginConfiguration Configuration { get; set; }
+        private Telligent.Evolution.Extensibility.Version2.IPluginConfiguration Configuration { get; set; }
 
+        public bool EnableSearch => Configuration.GetBool("enableSearch").GetValueOrDefault(false);
         #region IPlugin Members
 
         public string Name => "ContentMetadata Plugin";
@@ -23,11 +25,28 @@ namespace ContentMetadata.Plugins
         public void Initialize()
         {
             Apis.Get<IContents>().Events.AfterDelete += EventsOnAfterDelete;
+            Apis.Get<ISearchIndexing>().Events.BeforeBulkIndex += EventsOnBeforeBulkIndex;
+        }
+
+        private void EventsOnBeforeBulkIndex(BeforeBulkIndexingEventArgs e)
+        {
+            if (!EnableSearch)
+                return;
+
+            foreach (var document in e.Documents)
+            {
+                var metadata = Apis.Get<IContentMetadataApi>().List(document.ContentId);
+
+                foreach (var item in metadata)
+                {
+                    document.AddField("metadata_" + item.Key.ToLower(), item.Value);
+                }
+            }
         }
 
         private void EventsOnAfterDelete(ContentAfterDeleteEventArgs e)
         {
-            // TODO: Consider moving to IEvolutionJob to avoid blocking UI
+            // TODO: Consider moving to IEvolutionJob
             Apis.Get<IContentMetadataApi>().Delete(e.ContentId);
         }
 
@@ -55,19 +74,40 @@ namespace ContentMetadata.Plugins
 
         public bool IsConfigured => DataService.IsInstalled();
 
+
+        public void Update(Telligent.Evolution.Extensibility.Version2.IPluginConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
         public PropertyGroup[] ConfigurationOptions
         {
             get
             {
-                var groups = new[] { new PropertyGroup("options", "Options", 0) };
-                
+                PropertyGroup[] groups =
+                {
+                    new PropertyGroup
+                    {
+                        Id = "options",
+                        LabelText = "Options",
+                        OrderNumber = 0
+                    }
+                };
+
+                var enableSearch = new Property
+                {
+                    Id = "enableSearch",
+                    LabelText = "Enable search",
+                    DescriptionText = "When enabled, metadata stored against an object will be added to the search index.",
+                    DataType = "Bool",
+                    OrderNumber = 0,
+                    DefaultValue = "false"
+                };
+
+                groups[0].Properties.Add(enableSearch);
+
                 return groups;
             }
-        }
-
-        public void Update(IPluginConfiguration configuration)
-        {
-            Configuration = configuration;
         }
 
         #endregion
