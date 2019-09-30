@@ -25,7 +25,7 @@ Each of the 3 API's use the same base implementation meaning you get a consisist
 
 ## Search
 
-The plugin allows you to optionally add metadata into the search index. When an item is indexed and it has metadata stored against it, it will be added to solr using the item key in lowercase prefixed by metadata_. For example, if you add a value with a key `MyData`, it will be added to Solr with a field name of `metadata_mydata`. This allows you to use the out of the box search API's e.g. you could pass `query=metadata_mydata:myvalue` into the SearchResults API.
+The plugin allows you to optionally add metadata into the search index. When an item is indexed and it has metadata stored against it, it will be added to solr using the item key in lowercase prefixed by metadata_. For example, if you add a value with a key `MyData`, it will be added to Solr with a field name of `metadata_mydata`. This allows you to use the out of the box search API's e.g. you could pass `query=metadata_mydata:myvalue` into the SearchResults API. Please be aware that the search field and value are case sensitive when using Solr.
 
 ## InProcess API
 The InProcess API can be used to set and access metadata using C# in plugins or other custom code.
