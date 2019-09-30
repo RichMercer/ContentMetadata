@@ -23,6 +23,10 @@ To access the API's, you will need to enable the plugin `ContentMetadata Plugin`
 
 Each of the 3 API's use the same base implementation meaning you get a consisisten set of abilities. Each provides the ability to List, Get, Set and Delete metadata associated with an IContent entity. In all cases the ContentId of the content you are storing data against must be provided. Currently there is no REST API due to concerns around information disclosure. I am looking at ways to secure the access to ContentMetada calls inline with the platforms own checks on permissions.
 
+## Search
+
+The plugin allows you to optionally add metadata into the search index. When an item is indexed and it has metadata stored against it, it will be added to solr using the item key in lowercase prefixed by metadata_. For example, if you add a value with a key `MyData`, it will be added to Solr with a field name of `metadata_mydata`. This allows you to use the out of the box search API's e.g. you could pass `query=metadata_mydata:myvalue` into the SearchResults API.
+
 ## InProcess API
 The InProcess API can be used to set and access metadata using C# in plugins or other custom code.
 
