@@ -10,23 +10,23 @@ using Telligent.Evolution.Extensibility.Api.Version1;
 
 namespace ContentMetadata.Data
 {
-    internal static class DataService
-    {
-        #region Helper Methods
+	internal static class DataService
+	{
+		#region Helper Methods
 
-        private static SqlConnection GetSqlConnection()
-        {
-            return Apis.Get<IDatabaseConnections>().GetConnection("SiteSqlServer");
-        }
+		private static SqlConnection GetSqlConnection()
+		{
+			return Apis.Get<IDatabaseConnections>().GetConnection("SiteSqlServer");
+		}
 
-        private static SqlCommand CreateSprocCommand(string sprocName, SqlConnection connection)
-        {
-            return new SqlCommand("dbo." + sprocName, connection) { CommandType = CommandType.StoredProcedure };
-        }
+		private static SqlCommand CreateSprocCommand(string sprocName, SqlConnection connection)
+		{
+			return new SqlCommand("dbo." + sprocName, connection) { CommandType = CommandType.StoredProcedure };
+		}
 
-        private static bool HasRequiredPermissions()
-        {
-            const string statement = @"IF IS_ROLEMEMBER ('db_owner') = 1
+		private static bool HasRequiredPermissions()
+		{
+			const string statement = @"IF IS_ROLEMEMBER ('db_owner') = 1
                                     BEGIN
                                         SELECT 1
                                     END
@@ -35,185 +35,229 @@ namespace ContentMetadata.Data
 	                                    SELECT 0
                                     END";
 
-            int value;
-            using (var connection = GetSqlConnection())
-            {
-                connection.Open();
+			int value;
+			using (var connection = GetSqlConnection())
+			{
+				connection.Open();
 
-                using (var command = new SqlCommand(statement, connection))
-                {
-                    int.TryParse(command.ExecuteScalar().ToString(), out value);
-                }
-            }
+				using (var command = new SqlCommand(statement, connection))
+				{
+					int.TryParse(command.ExecuteScalar().ToString(), out value);
+				}
+			}
 
-            return Convert.ToBoolean(value);
-        }
+			return Convert.ToBoolean(value);
+		}
 
-        public static bool IsInstalled()
-        {
-            const string statement = @"SELECT 1 FROM SYS.OBJECTS WHERE OBJECT_ID = OBJECT_ID(N'[dbo].[custom_MetaData]') AND TYPE IN (N'U')";
+		public static bool IsInstalled()
+		{
+			const string statement = @"SELECT 1 FROM SYS.OBJECTS WHERE OBJECT_ID = OBJECT_ID(N'[dbo].[custom_MetaData]') AND TYPE IN (N'U')";
 
-            int value;
-            using (var connection = GetSqlConnection())
-            {
-                connection.Open();
+			int value;
+			using (var connection = GetSqlConnection())
+			{
+				connection.Open();
 
-                using (var command = new SqlCommand(statement, connection))
-                {
-                    var result = command.ExecuteScalar();
-                    
-                    int.TryParse(result?.ToString(), out value);
-                }
-            }
+				using (var command = new SqlCommand(statement, connection))
+				{
+					var result = command.ExecuteScalar();
 
-            return Convert.ToBoolean(value);
-        }
+					int.TryParse(result?.ToString(), out value);
+				}
+			}
 
-        #endregion
+			return Convert.ToBoolean(value);
+		}
 
-        #region IInstallablePlugin Methods
+		#endregion
 
-        internal static void Install()
-        {
-            if (!HasRequiredPermissions())
-            {
-                Apis.Get<IEventLog>().Write("Unable to install SQL scripts for plugin", new EventLogEntryWriteOptions { EventType = "Warning", Category = "ContentMetadata", EventId = 3660 });
-                return;
-            }
+		#region IInstallablePlugin Methods
 
-            using (var connection = GetSqlConnection())
-            {
-                connection.Open();
-                foreach (var statement in GetBatchedStatementsFromSql())
-                {
-                    using (var command = new SqlCommand(statement, connection))
-                    {
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-        }
+		internal static void Install()
+		{
+			if (!HasRequiredPermissions())
+			{
+				Apis.Get<IEventLog>().Write("Unable to install SQL scripts for plugin", new EventLogEntryWriteOptions { EventType = "Warning", Category = "ContentMetadata", EventId = 3660 });
+				return;
+			}
 
-        private static IEnumerable<string> GetBatchedStatementsFromSql()
-        {
-            var sqlScript = GetStatementsFromSql();
-            return Regex.Split(sqlScript, @"^\s*GO\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline).Select(statement => Regex.Replace(statement, @"(?:^SET\s+.*?$|\/\*.*?\*\/|--.*?$)", "\r\n",
-                RegexOptions.IgnoreCase | RegexOptions.Multiline).Trim()).Where(sanitizedStatement => sanitizedStatement.Length > 0);
-        }
+			using (var connection = GetSqlConnection())
+			{
+				connection.Open();
+				foreach (var statement in GetBatchedStatementsFromSql())
+				{
+					using (var command = new SqlCommand(statement, connection))
+					{
+						command.ExecuteNonQuery();
+					}
+				}
+			}
+		}
 
-        private static string GetStatementsFromSql()
-        {
-            var stream = typeof(DataService).Assembly.GetManifestResourceStream("ContentMetadata.Resources.Sql.Install.sql");
-            if (stream == null || stream.Length == 0)
-                return string.Empty;
+		private static IEnumerable<string> GetBatchedStatementsFromSql()
+		{
+			var sqlScript = GetStatementsFromSql();
+			return Regex.Split(sqlScript, @"^\s*GO\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline).Select(statement => Regex.Replace(statement, @"(?:^SET\s+.*?$|\/\*.*?\*\/|--.*?$)", "\r\n",
+				RegexOptions.IgnoreCase | RegexOptions.Multiline).Trim()).Where(sanitizedStatement => sanitizedStatement.Length > 0);
+		}
 
-            using (stream)
-            {
-                var data = new byte[stream.Length];
-                stream.Read(data, 0, data.Length);
-                var text = Encoding.UTF8.GetString(data);
-                return text[0] > 255 ? text.Substring(1) : text;
-            }
-        }
+		private static string GetStatementsFromSql()
+		{
+			var stream = typeof(DataService).Assembly.GetManifestResourceStream("ContentMetadata.Resources.Sql.Install.sql");
+			if (stream == null || stream.Length == 0)
+				return string.Empty;
 
-        #endregion
+			using (stream)
+			{
+				var data = new byte[stream.Length];
+				stream.Read(data, 0, data.Length);
+				var text = Encoding.UTF8.GetString(data);
+				return text[0] > 255 ? text.Substring(1) : text;
+			}
+		}
 
-        public static List<ContentMetadata> List(Guid contentId)
-        {
-            var items = new List<ContentMetadata>();
+		#endregion
 
-            using (var connection = GetSqlConnection())
-            {
-                using (var command = CreateSprocCommand("[custom_MetaData_List]", connection))
-                {
-                    command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
-                    
-                    connection.Open();
+		public static List<ContentMetadata> List(Guid contentId)
+		{
+			var items = new List<ContentMetadata>();
 
-                    using (SqlDataReader dr = command.ExecuteReader())
-                    {
-                        while (dr.Read())
-                        {
-                            items.Add(Populate(dr));
-                        }
-                        // Done with the reader and the connection
-                        dr.Close();
-                    }
+			using (var connection = GetSqlConnection())
+			{
+				using (var command = CreateSprocCommand("[custom_MetaData_List]", connection))
+				{
+					command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
 
-                    connection.Close();
-                }
-            }
+					connection.Open();
 
-            return items;
-        }
+					using (SqlDataReader dr = command.ExecuteReader())
+					{
+						while (dr.Read())
+						{
+							items.Add(Populate(dr));
+						}
+						// Done with the reader and the connection
+						dr.Close();
+					}
 
-        public static void Delete(Guid contentId)
-        {
-            using (var connection = GetSqlConnection())
-            {
-                using (var command = CreateSprocCommand("[custom_MetaData_Delete]", connection))
-                {
-                    command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
+					connection.Close();
+				}
+			}
 
-                    connection.Open();
-                    command.ExecuteNonQuery();
-                    connection.Close();
-                }
-            }
-        }
+			return items;
+		}
 
-        public static void Delete(Guid contentId, string key)
-        {
-            using (var connection = GetSqlConnection())
-            {
-                using (var command = CreateSprocCommand("[custom_MetaData_Delete_Key]", connection))
-                {
-                    command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
-                    command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
+		public static List<ContentMetadata> ListUsers(Guid customerId, Guid contentTypeId)
+		{
+			var items = new List<ContentMetadata>();
 
-                    connection.Open();
-                    command.ExecuteNonQuery();
-                    connection.Close();
-                }
-            }
-        }
+			using (var connection = GetSqlConnection())
+			{
+				using (var command = CreateSprocCommand("[user_Metadata_List]", connection))
+				{
+					command.Parameters.Add("@CustomerId", SqlDbType.UniqueIdentifier).Value = customerId;
+					command.Parameters.Add("@ContentTypeId", SqlDbType.UniqueIdentifier).Value = contentTypeId;
 
-        public static ContentMetadata Set(Guid contentId, Guid contentTypeId, string key, string value)
-        {
-            using (var connection = GetSqlConnection())
-            {
-                using (var command = CreateSprocCommand("[custom_MetaData_Set]", connection))
-                {
-                    command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
-                    command.Parameters.Add("@ContentTypeId", SqlDbType.UniqueIdentifier).Value = contentTypeId;
-                    command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
-                    command.Parameters.Add("@DataValue", SqlDbType.Text).Value = value;
+					connection.Open();
 
-                    connection.Open();
-                    using (var reader = command.ExecuteReader(CommandBehavior.SingleRow))
-                    {
-                        if (reader.Read())
-                        {
-                            return Populate(reader);
-                        }
-                    }
-                    connection.Close();
-                }
-            }
+					using (SqlDataReader dr = command.ExecuteReader())
+					{
+						while (dr.Read())
+						{
+							items.Add(PopulateData(dr));
+						}
+						// Done with the reader and the connection
+						dr.Close();
+					}
 
-            return new ContentMetadata();
-        }
+					connection.Close();
+				}
+			}
 
-        private static ContentMetadata Populate(IDataReader reader)
-        {
-            var article = new ContentMetadata(
-                reader["ContentId"] == null ? Guid.Empty : new Guid(reader["ContentId"].ToString()),
-                reader["ContentTypeId"] == null ? Guid.Empty : new Guid(reader["ContentTypeId"].ToString()),
-                reader["DataKey"].ToString(),
-                reader["DataValue"].ToString()
-                );
+			return items;
+		}
 
-            return article;
-        }
-    }
+
+		public static void Delete(Guid contentId)
+		{
+			using (var connection = GetSqlConnection())
+			{
+				using (var command = CreateSprocCommand("[custom_MetaData_Delete]", connection))
+				{
+					command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
+
+					connection.Open();
+					command.ExecuteNonQuery();
+					connection.Close();
+				}
+			}
+		}
+
+		public static void Delete(Guid contentId, string key)
+		{
+			using (var connection = GetSqlConnection())
+			{
+				using (var command = CreateSprocCommand("[custom_MetaData_Delete_Key]", connection))
+				{
+					command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
+					command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
+
+					connection.Open();
+					command.ExecuteNonQuery();
+					connection.Close();
+				}
+			}
+		}
+
+		public static ContentMetadata Set(Guid contentId, Guid contentTypeId, string key, string value)
+		{
+			using (var connection = GetSqlConnection())
+			{
+				using (var command = CreateSprocCommand("[custom_MetaData_Set]", connection))
+				{
+					command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
+					command.Parameters.Add("@ContentTypeId", SqlDbType.UniqueIdentifier).Value = contentTypeId;
+					command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
+					command.Parameters.Add("@DataValue", SqlDbType.Text).Value = value;
+
+					connection.Open();
+					using (var reader = command.ExecuteReader(CommandBehavior.SingleRow))
+					{
+						if (reader.Read())
+						{
+							return Populate(reader);
+						}
+					}
+					connection.Close();
+				}
+			}
+
+			return new ContentMetadata();
+		}
+
+		private static ContentMetadata Populate(IDataReader reader)
+		{
+			var article = new ContentMetadata(
+				reader["ContentId"] == null ? Guid.Empty : new Guid(reader["ContentId"].ToString()),
+				reader["ContentTypeId"] == null ? Guid.Empty : new Guid(reader["ContentTypeId"].ToString()),
+				reader["DataKey"].ToString(),
+				reader["DataValue"].ToString()
+				);
+
+			return article;
+		}
+
+		private static ContentMetadata PopulateData(IDataReader reader)
+		{
+			var article = new ContentMetadata(
+				reader["ContentId"] == null ? Guid.Empty : new Guid(reader["ContentId"].ToString()),
+				reader["ContentTypeId"] == null ? Guid.Empty : new Guid(reader["ContentTypeId"].ToString()),
+				reader["DataKey"].ToString(),
+				reader["DataValue"].ToString(),
+				reader["UserId"] == null ? 0 : int.Parse(reader["UserId"].ToString())
+				);
+
+			return article;
+		}
+	}
 }
