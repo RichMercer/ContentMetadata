@@ -147,16 +147,15 @@ namespace ContentMetadata.Data
 			return items;
 		}
 
-		public static List<ContentMetadata> ListUsers(Guid customerId, Guid contentTypeId)
+		public static List<ContentMetadata> ListContent(string dataKey)
 		{
 			var items = new List<ContentMetadata>();
 
 			using (var connection = GetSqlConnection())
 			{
-				using (var command = CreateSprocCommand("[user_Metadata_List]", connection))
+				using (var command = CreateSprocCommand("[custom_Metadata_List_Key]", connection))
 				{
-					command.Parameters.Add("@CustomerId", SqlDbType.UniqueIdentifier).Value = customerId;
-					command.Parameters.Add("@ContentTypeId", SqlDbType.UniqueIdentifier).Value = contentTypeId;
+					command.Parameters.Add("@DataKey", SqlDbType.NVarChar).Value = dataKey;
 
 					connection.Open();
 
@@ -164,7 +163,7 @@ namespace ContentMetadata.Data
 					{
 						while (dr.Read())
 						{
-							items.Add(PopulateData(dr));
+							items.Add(Populate(dr));
 						}
 						// Done with the reader and the connection
 						dr.Close();
@@ -247,17 +246,5 @@ namespace ContentMetadata.Data
 			return article;
 		}
 
-		private static ContentMetadata PopulateData(IDataReader reader)
-		{
-			var article = new ContentMetadata(
-				reader["ContentId"] == null ? Guid.Empty : new Guid(reader["ContentId"].ToString()),
-				reader["ContentTypeId"] == null ? Guid.Empty : new Guid(reader["ContentTypeId"].ToString()),
-				reader["DataKey"].ToString(),
-				reader["DataValue"].ToString(),
-				reader["UserId"] == null ? 0 : int.Parse(reader["UserId"].ToString())
-				);
-
-			return article;
-		}
 	}
 }

@@ -60,47 +60,47 @@ namespace ContentMetadata.Api
 				return response;
 			});
 
-			controller.Add(2, "usermetadata/{customerId}", HttpMethod.Get, req =>
+			controller.Add(2, "findmetadata/{Key}", HttpMethod.Get, req =>
 			{
-				var response = new RestResponse { Name = "CommunityUserId" };
+				var response = new RestResponse { Name = "ContentMetadata" };
 
 				try
 				{
-					Guid customerGUID;
-					var param = req.PathParameters["CustomerId"];
-					if (param == null || !Guid.TryParse(param.ToString(), out customerGUID))
-						throw new ArgumentException("CustomerId is required");
+					var dataKey = req.PathParameters["Key"].ToString() ?? string.Empty;
+					if (string.IsNullOrEmpty(dataKey))
+						throw new ArgumentException("Key is required");
 
-					Guid contentTypeId = Apis.Get<IUsers>().ContentTypeId;
-					//var paramCntTypId = req.PathParameters["ContentTypeId"];
-					//if (paramCntTypId == null || !Guid.TryParse(paramCntTypId.ToString(), out contentTypeId))
-					//    throw new ArgumentException("ContentTypeId is required");
+					var dataValue = req.Request.Params["Value"] ?? string.Empty;
 
-					var key = req.Request.Params["Key"] ?? string.Empty;
+					Guid contentTypeId;
+					Guid.TryParse(req.Request.Params["ContentTypeId"] ?? string.Empty, out contentTypeId);
 
-
-					if (!string.IsNullOrEmpty(key))
+					if (!string.IsNullOrEmpty(dataKey) && !string.IsNullOrEmpty(dataValue) && contentTypeId != Guid.Empty)
 					{
-						var item = Apis.Get<IContentMetadataApi>().GetUser(customerGUID, key);
+						var item = Apis.Get<IContentMetadataApi>().Get(contentTypeId, dataKey, dataValue);
 						if (string.IsNullOrEmpty(item.Value))
 						{
-							response.Errors = new[] { "User Metadata Not Found" };
+							response.Errors = new[] { "Content Metadata Not Found." };
 						}
 						else
 						{
 							response.Data = new RestContentMetadata(item);
 						}
 					}
+					else if (!string.IsNullOrEmpty(dataKey) && !string.IsNullOrEmpty(dataValue))
+					{
+						var items = Apis.Get<IContentMetadataApi>().List(dataKey, dataValue);
+						response.Data = items.ToList();
+					}
 					else
 					{
-						var items = Apis.Get<IContentMetadataApi>().List(customerGUID);
-						response.Data = items.Select(x => new RestContentMetadata(x)).ToList();
+						var items = Apis.Get<IContentMetadataApi>().List(dataKey);
+						response.Data = items.ToList();
 					}
 
 				}
 				catch (Exception ex)
 				{
-
 					response.Errors = new[] { ex.Message };
 				}
 

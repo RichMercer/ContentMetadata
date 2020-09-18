@@ -103,14 +103,14 @@ GO
 GRANT EXECUTE ON [dbo].[custom_Metadata_Delete_Key] TO PUBLIC
 GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[user_Metadata_List]') AND type in (N'P', N'PC'))
-	DROP PROCEDURE [dbo].[user_Metadata_List]
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[custom_Metadata_List_Key]') AND type in (N'P', N'PC'))
+	DROP PROCEDURE [dbo].[custom_Metadata_List_Key]
 GO
-CREATE PROCEDURE [dbo].[user_Metadata_List]
-		@CustomerId		uniqueidentifier,
-		@ContentTypeId	uniqueidentifier
+CREATE PROCEDURE [dbo].[custom_Metadata_List_Key]
+		@DataKey		nvarchar(64)
 AS
 BEGIN
-		SELECT [UserId],[ContentId], [ContentTypeId], [DataKey], [DataValue] FROM [custom_Metadata] cm, [cs_Users] us WHERE cm.ContentId = us.MembershipID and  [DataValue] = @CustomerId and [ContentTypeId] = @ContentTypeId
+		SELECT [ContentId], [ContentTypeId], [DataKey], [DataValue] FROM [custom_Metadata]  
+		WHERE  ([DataKey] = @DataKey)
 END
 GO

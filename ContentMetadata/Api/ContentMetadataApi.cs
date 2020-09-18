@@ -10,7 +10,7 @@ namespace ContentMetadata.Api
 	public class ContentMetadataApi : IContentMetadataApi
 	{
 		private const string CacheKey = "ContentMetadata-ContentId:{0}";
-		private const string UserCacheKey = "ContentMetadata-CustomerId:{0}";
+		private const string CachedataKey = "ContentMetadata-Key:{0}";
 
 		public IReadOnlyList<ContentMetadata> List(Guid contentId)
 		{
@@ -25,14 +25,19 @@ namespace ContentMetadata.Api
 			return item ?? new ContentMetadata();
 		}
 
-		public IReadOnlyList<ContentMetadata> ListUsers(Guid customerId, Guid contentTypeId)
+		public IReadOnlyList<ContentMetadata> List(string key)
 		{
-			return CacheHelper.Get(string.Format(UserCacheKey, customerId), () => DataService.ListUsers(customerId, contentTypeId));
+			return CacheHelper.Get(string.Format(CachedataKey, key), () => DataService.ListContent(key));
 		}
 
-		public ContentMetadata GetUser(Guid customerId, string key)
+		public IReadOnlyList<ContentMetadata> List(string key, string value)
 		{
-			var item = ListUsers(customerId, Apis.Get<IUsers>().ContentTypeId).FirstOrDefault(x => x.Key == key);
+			return List(key).Where(x => x.Value == value).ToList();
+		}
+
+		public ContentMetadata Get(Guid contentTypeId, string key, string value)
+		{
+			var item = List(key).FirstOrDefault(x => x.Value == value && x.ContentTypeId == contentTypeId);
 			return item ?? new ContentMetadata();
 		}
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Telligent.Evolution.Extensibility.Api;
 
 namespace ContentMetadata.Api
@@ -8,11 +9,13 @@ namespace ContentMetadata.Api
 	{
 		IReadOnlyList<ContentMetadata> List(Guid contentId);
 
+		IReadOnlyList<ContentMetadata> List(string key, string value);
+
+		IReadOnlyList<ContentMetadata> List(string key);
+
 		ContentMetadata Get(Guid contentId, string key);
 
-		IReadOnlyList<ContentMetadata> ListUsers(Guid customerId, Guid contentTypeId);
-
-		ContentMetadata GetUser(Guid customerId, string key);
+		ContentMetadata Get(Guid contentTypeId, string key, string value);
 
 		/// <summary>
 		/// Deletes all metadata associated with the IContent.
