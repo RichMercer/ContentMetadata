@@ -102,3 +102,16 @@ GO
 
 GRANT EXECUTE ON [dbo].[custom_Metadata_Delete_Key] TO PUBLIC
 GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[custom_Metadata_List_Key]') AND type in (N'P', N'PC'))
+	DROP PROCEDURE [dbo].[custom_Metadata_List_Key]
+GO
+CREATE PROCEDURE [dbo].[custom_Metadata_List_Key]
+		@DataKey		nvarchar(64),
+		@DataValue		nvarchar(max)
+AS
+BEGIN
+		SELECT [ContentId], [ContentTypeId], [DataKey], [DataValue] FROM [custom_Metadata]  
+		WHERE  [DataKey] = @DataKey AND [DataValue] = @DataValue
+END
+GO
