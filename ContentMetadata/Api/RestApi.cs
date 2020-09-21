@@ -71,6 +71,8 @@ namespace ContentMetadata.Api
 						throw new ArgumentException("Key is required");
 
 					var dataValue = req.Request.Params["Value"] ?? string.Empty;
+					if (string.IsNullOrEmpty(dataValue))
+						throw new ArgumentException("Value is required");
 
 					Guid contentTypeId;
 					Guid.TryParse(req.Request.Params["ContentTypeId"] ?? string.Empty, out contentTypeId);
@@ -87,16 +89,12 @@ namespace ContentMetadata.Api
 							response.Data = new RestContentMetadata(item);
 						}
 					}
-					else if (!string.IsNullOrEmpty(dataKey) && !string.IsNullOrEmpty(dataValue))
+					else 
 					{
 						var items = Apis.Get<IContentMetadataApi>().List(dataKey, dataValue);
-						response.Data = items.ToList();
+						response.Data = items.Select(x => new RestContentMetadata(x)).ToList(); 
 					}
-					else
-					{
-						var items = Apis.Get<IContentMetadataApi>().List(dataKey);
-						response.Data = items.ToList();
-					}
+					
 
 				}
 				catch (Exception ex)

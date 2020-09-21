@@ -10,7 +10,6 @@ namespace ContentMetadata.Api
 	public class ContentMetadataApi : IContentMetadataApi
 	{
 		private const string CacheKey = "ContentMetadata-ContentId:{0}";
-		private const string CachedataKey = "ContentMetadata-Key:{0}";
 
 		public IReadOnlyList<ContentMetadata> List(Guid contentId)
 		{
@@ -25,19 +24,15 @@ namespace ContentMetadata.Api
 			return item ?? new ContentMetadata();
 		}
 
-		public IReadOnlyList<ContentMetadata> List(string key)
-		{
-			return CacheHelper.Get(string.Format(CachedataKey, key), () => DataService.ListContent(key));
-		}
 
 		public IReadOnlyList<ContentMetadata> List(string key, string value)
 		{
-			return List(key).Where(x => x.Value == value).ToList();
+			return  DataService.ListContent(key,value);
 		}
 
 		public ContentMetadata Get(Guid contentTypeId, string key, string value)
 		{
-			var item = List(key).FirstOrDefault(x => x.Value == value && x.ContentTypeId == contentTypeId);
+			var item = List(key,value).FirstOrDefault(x => x.ContentTypeId == contentTypeId);
 			return item ?? new ContentMetadata();
 		}
 

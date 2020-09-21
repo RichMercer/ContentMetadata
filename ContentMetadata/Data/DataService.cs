@@ -147,7 +147,7 @@ namespace ContentMetadata.Data
 			return items;
 		}
 
-		public static List<ContentMetadata> ListContent(string dataKey)
+		public static List<ContentMetadata> ListContent(string key, string value)
 		{
 			var items = new List<ContentMetadata>();
 
@@ -155,8 +155,8 @@ namespace ContentMetadata.Data
 			{
 				using (var command = CreateSprocCommand("[custom_Metadata_List_Key]", connection))
 				{
-					command.Parameters.Add("@DataKey", SqlDbType.NVarChar).Value = dataKey;
-
+					command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
+					command.Parameters.Add("@DataValue", SqlDbType.NVarChar).Value = value;
 					connection.Open();
 
 					using (SqlDataReader dr = command.ExecuteReader())

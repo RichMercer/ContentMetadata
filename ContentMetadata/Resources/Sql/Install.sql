@@ -107,10 +107,11 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[custom
 	DROP PROCEDURE [dbo].[custom_Metadata_List_Key]
 GO
 CREATE PROCEDURE [dbo].[custom_Metadata_List_Key]
-		@DataKey		nvarchar(64)
+		@DataKey		nvarchar(64),
+		@DataValue		nvarchar(max)
 AS
 BEGIN
 		SELECT [ContentId], [ContentTypeId], [DataKey], [DataValue] FROM [custom_Metadata]  
-		WHERE  ([DataKey] = @DataKey)
+		WHERE  [DataKey] = @DataKey AND [DataValue] = @DataValue
 END
 GO

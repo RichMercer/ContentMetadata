@@ -7,13 +7,12 @@ namespace ContentMetadata
 	{
 		public ContentMetadata() { }
 
-		public ContentMetadata(Guid contentId, Guid contentTypeId, string key, string value, int userId = 0)
+		public ContentMetadata(Guid contentId, Guid contentTypeId, string key, string value)
 		{
 			ContentId = contentId;
 			ContentTypeId = contentTypeId;
 			Key = key;
 			Value = value;
-			UserId = userId;
 		}
 
 		public Guid ContentId { get; }
@@ -23,8 +22,6 @@ namespace ContentMetadata
 		public string Key { get; }
 
 		public string Value { get; }
-
-		public int? UserId { get; set; }
 
 		public bool GetBoolValue(bool defaultValue)
 		{
@@ -54,7 +51,6 @@ namespace ContentMetadata
 			ContentTypeId = metadata.ContentTypeId;
 			Key = metadata.Key;
 			Value = metadata.Value;
-			UserId = metadata.UserId;
 		}
 
 		public Guid ContentId { get; set; }
@@ -64,7 +60,5 @@ namespace ContentMetadata
 		public string Key { get; set; }
 
 		public string Value { get; set; }
-
-		public int? UserId { get; set; }
 	}
 }

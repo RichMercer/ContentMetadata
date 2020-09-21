@@ -11,8 +11,6 @@ namespace ContentMetadata.Api
 
 		IReadOnlyList<ContentMetadata> List(string key, string value);
 
-		IReadOnlyList<ContentMetadata> List(string key);
-
 		ContentMetadata Get(Guid contentId, string key);
 
 		ContentMetadata Get(Guid contentTypeId, string key, string value);
