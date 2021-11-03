@@ -42,7 +42,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="Telligent.Evolution.Platform">
-      <HintPath>..\..\..\..\..\Telligent\Telligent Backups\VerintCommunity-11.1.3.12348\Web\bin\Telligent.Evolution.Platform.dll</HintPath>
+      <HintPath>references\Telligent.Evolution.Platform.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
