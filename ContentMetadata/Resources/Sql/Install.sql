@@ -115,3 +115,6 @@ BEGIN
 		WHERE  [DataKey] = @DataKey AND [DataValue] = @DataValue
 END
 GO
+
+GRANT EXECUTE ON [dbo].[custom_Metadata_List_Key] TO PUBLIC
+GO
