@@ -8,7 +8,7 @@
 #   2. In GitHub, create the "nuget" environment (Settings > Environments),
 #      add yourself as a required reviewer, and limit deployment to tags
 #      matching v14.*.
-#   3. Add a repository variable NUGET_USER holding your nuget.org user name.
+#   3. Add a repository secret NUGET_USER holding your nuget.org user name.
 name: NuGet
 
 on:
@@ -92,7 +92,7 @@ jobs:
         id: login
         uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
         with:
-          user: ${{ vars.NUGET_USER }}
+          user: ${{ secrets.NUGET_USER }}
 
       # Pushing the .nupkg also pushes the matching .snupkg from the same folder.
       - name: Push to nuget.org
