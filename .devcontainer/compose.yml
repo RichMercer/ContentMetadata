@@ -1,0 +1,204 @@
+name: contentmetadata-community
+x-common-variables: &common-variables
+  MSSQL_HOST: database
+  MSSQL_SA_USER: SA
+  MSSQL_SA_PASSWORD: T3ll1g3nt
+  MSSQL_APP_USER: community_user
+  MSSQL_APP_PASSWORD: T3ll1g3nt
+  DB_FORCE_UPGRADE: ${DB_FORCE_UPGRADE:-false}
+  APP_DB_NAME: ${APP_DB_NAME:-community_app}
+  REPORTING_DB_NAME: ${REPORTING_DB_NAME:-community_reporting}
+  ADMIN_USERNAME: admin
+  ADMIN_PASSWORD: p
+  ADMIN_EMAIL: admin@example.com
+  PLUGIN_USER: contentmetadata
+  PLUGIN_PASSWORD: T3ll1g3nt
+  SEED_LEGACY_METADATA: ${SEED_LEGACY_METADATA:-false}
+# Ports are bound to 127.0.0.1 so the SA password and unauthenticated Solr below
+# are only reachable from this machine, not from the local network.
+x-app-variables: &app-variables
+  EVOLUTION_CONFIGURATION_SOURCES: file=~/communitySettings.json;file=/community/config/settings.json;env;command
+networks:
+  community:
+    name: contentmetadata-community-net
+volumes:
+  cfs:
+    name: contentmetadata-community-cfs
+    driver: local
+  sql:
+    name: contentmetadata-community-sql
+    driver: local
+  solr:
+    name: contentmetadata-community-solr
+    driver: local
+services:
+  web:
+    image: af1.verintconnect.com/dfe-community/community/web:14.0.0.684
+    restart: unless-stopped
+    networks:
+      - community
+    ports:
+      - 127.0.0.1:5863:8080
+    volumes:
+      - cfs:/app/cfs
+      - ./settings.json:/community/config/settings.json:ro
+      - ../artifacts/build:/app/cfs/plugins
+    environment:
+      <<: *app-variables
+    healthcheck:
+      test: ["CMD", "/app/tools/healthcheck"]
+      start_period: 20s
+      interval: 60s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      database:
+        condition: service_healthy
+      search:
+        condition: service_healthy
+      installer:
+        condition: service_completed_successfully
+      plugin-database:
+        condition: service_completed_successfully
+      cfs-init:
+        condition: service_completed_successfully
+  job:
+    image: af1.verintconnect.com/dfe-community/community/job:14.0.0.684
+    restart: unless-stopped
+    networks:
+      - community
+    volumes:
+      - cfs:/app/cfs
+      - ./settings.json:/community/config/settings.json:ro
+      - ../artifacts/build:/app/cfs/plugins
+    environment:
+      <<: *app-variables
+    healthcheck:
+      test: ["CMD", "/app/tools/healthcheck"]
+      start_period: 20s
+      interval: 60s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      database:
+        condition: service_healthy
+      search:
+        condition: service_healthy
+      installer:
+        condition: service_completed_successfully
+      plugin-database:
+        condition: service_completed_successfully
+      cfs-init:
+        condition: service_completed_successfully
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-CU20-ubuntu-22.04
+    restart: unless-stopped
+    networks:
+      - community
+    ports:
+      - 127.0.0.1:5994:1433
+    volumes:
+      - sql:/var/opt/mssql
+    env_file:
+      - ./mssql-eula.env
+    environment:
+      <<: *common-variables
+    healthcheck:
+      test: >-
+        /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U SA -P "$$MSSQL_SA_PASSWORD" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+  search:
+    image: af1.verintconnect.com/dfe-community/community/search:14.0.0.639
+    restart: unless-stopped
+    networks:
+      - community
+    ports:
+      - 127.0.0.1:5361:8983
+    volumes:
+      - solr:/var/solr
+    environment:
+      CORE_CONTENT: telligent-content
+      CORE_CONVERSATIONS: telligent-conversations
+    healthcheck:
+      test: >-
+        curl -s -A 'healthcheck' http://localhost:8983/solr/$$CORE_CONTENT/admin/ping?wt=json | grep -q '"status":"OK"'
+      start_period: 15s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  infra:
+    image: af1.verintconnect.com/dfe-community/community/infra:14.0.0.644
+    restart: unless-stopped
+    networks:
+      - community
+    environment:
+      INFRA_Cache_MemoryLimitMegabytes: 500
+      INFRA_MessageBus_MaxLengthBytes: 102400
+      INFRA_MessageBus_IdleSeconds: 60
+      INFRA_Metrics_EnableOtlp: true
+      INFRA_Metrics_EnableConsole: false
+      INFRA_Metrics_OtlpEndpointProtocol: grpc
+      INFRA_Metrics_OtlpEndpoint: http://telemetry:18889/
+      INFRA_Logging_EnableOtlp: true
+      INFRA_Logging_EnableConsole: false
+      INFRA_Logging_OtlpEndpointProtocol: grpc
+      INFRA_Logging_OtlpEndpoint: http://telemetry:18889/
+      INFRA_Logging_MinimumLevel: Information,Microsoft.AspNetCore:Warning
+  telemetry:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.3.0
+    restart: unless-stopped
+    networks:
+      - community
+    ports:
+      - 127.0.0.1:5260:5160
+    environment:
+      ASPNETCORE_URLS: http://+:5160
+  smtp:
+    image: axllent/mailpit:v1.27
+    restart: unless-stopped
+    networks:
+      - community
+    ports:
+      - 127.0.0.1:5397:8025
+  installer:
+    image: af1.verintconnect.com/dfe-community/community/installer:14.0.0.684
+    networks:
+      - community
+    environment:
+      <<: *common-variables
+    depends_on:
+      database:
+        condition: service_healthy
+        restart: true
+  # Development only: creates the ContentMetadata plugin's SQL user and schema
+  # (see sql/plugin-database-user.sql) and optionally seeds legacy dbo data.
+  plugin-database:
+    image: mcr.microsoft.com/mssql/server:2022-CU20-ubuntu-22.04
+    networks:
+      - community
+    volumes:
+      - ./sql:/sql:ro
+    environment:
+      <<: *common-variables
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        set -e
+        sqlcmd() { /opt/mssql-tools18/bin/sqlcmd -C -b -S "$$MSSQL_HOST" -U "$$MSSQL_SA_USER" -P "$$MSSQL_SA_PASSWORD" "$$@"; }
+        sqlcmd -v APP_DB_NAME="$$APP_DB_NAME" PLUGIN_USER="$$PLUGIN_USER" PLUGIN_PASSWORD="$$PLUGIN_PASSWORD" -i /sql/plugin-database-user.sql
+        if [ "$$SEED_LEGACY_METADATA" = "true" ]; then
+          sqlcmd -v APP_DB_NAME="$$APP_DB_NAME" PLUGIN_USER="$$PLUGIN_USER" -i /sql/seed-legacy-data.sql
+        fi
+    depends_on:
+      installer:
+        condition: service_completed_successfully
+  cfs-init:
+    image: alpine:3.24.1
+    networks:
+      - community
+    entrypoint: chown -R 1654:1654 /app/cfs
+    volumes:
+      - cfs:/app/cfs

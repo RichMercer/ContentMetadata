@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach Debugger",
+      "type": "docker",
+      "request": "attach",
+      "platform": "netCore",
+    }
+  ]
+}

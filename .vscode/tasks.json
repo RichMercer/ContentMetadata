@@ -1,0 +1,211 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "detail": "Builds plugin",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "--configuration",
+        "${input:buildConfig}",
+        "${workspaceFolder}${/}ContentMetadata${/}ContentMetadata.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "--output",
+        "${workspaceFolder}${/}artifacts${/}build"
+      ],
+      "problemMatcher": {
+        "base": "$msCompile",
+        "applyTo": "closedDocuments",
+        "source": "",
+        "pattern": {
+          "regexp": "^(?:\\s*)?(?:\\s*\\d+>)?(\\S.*)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\)\\s*:\\s+((?:fatal +)?error|warning|info)\\s+(\\w+\\d+)\\s*:\\s*(.*)$",
+          "kind": "Location",
+          "file": 1,
+          "location": 2,
+          "severity": 3,
+          "code": 4,
+          "message": 5
+        }
+      },
+      "group": "build",
+      "icon": {
+        "id": "coffee"
+      }
+    },
+    {
+      "label": "Accept SQL Server End-User License Agreement",
+      "detail": "Records one-time local acceptance required before the SQL Server container can start",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "${workspaceFolder}${/}scripts${/}accept-mssql-eula.sh"
+      ],
+      "windows": {
+        "command": "pwsh",
+        "args": [
+          "${workspaceFolder}${/}scripts${/}accept-mssql-eula.ps1"
+        ]
+      },
+      "group": "build",
+      "icon": {
+        "id": "check"
+      }
+    },
+    {
+      "label": "Compose Restart",
+      "detail": "Restarts web and job services and clears distributed cache",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "${workspaceFolder}${/}scripts${/}compose.sh",
+        "restart",
+        "web",
+        "job",
+        "infra"
+      ],
+      "windows": {
+        "command": "pwsh",
+        "args": [
+          "${workspaceFolder}${/}scripts${/}compose.ps1",
+          "restart",
+          "web",
+          "job",
+          "infra"
+        ]
+      },
+      "group": "build",
+      "icon": {
+        "id": "debug-restart"
+      }
+    },
+    {
+      "label": "Compose Up",
+      "detail": "Installs, updates, or restarts compose project; first run requires one-time SQL Server End-User License Agreement acceptance",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "${workspaceFolder}${/}scripts${/}compose.sh",
+        "up"
+      ],
+      "windows": {
+        "command": "pwsh",
+        "args": [
+          "${workspaceFolder}${/}scripts${/}compose.ps1",
+          "up"
+        ]
+      },
+      "group": "build",
+      "icon": {
+        "id": "debug-restart"
+      }
+    },
+    {
+      "label": "Compose Down",
+      "detail": "Removes existing compose project, tearing down containers",
+      "type": "process",
+      "command": "bash",
+      "args": [
+        "${workspaceFolder}${/}scripts${/}compose.sh",
+        "down",
+        "--remove-orphans",
+        "${input:removeVolumes}"
+      ],
+      "windows": {
+        "command": "pwsh",
+        "args": [
+          "${workspaceFolder}${/}scripts${/}compose.ps1",
+          "down",
+          "--remove-orphans",
+          "${input:removeVolumes}"
+        ]
+      },
+      "group": "build",
+      "icon": {
+        "id": "debug-restart"
+      }
+    },
+    {
+      "label": "Publish",
+      "detail": "Builds a release-built plugin",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "publish",
+        "${workspaceFolder}${/}ContentMetadata${/}ContentMetadata.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary",
+        "--output",
+        "${workspaceFolder}${/}artifacts${/}publish"
+      ],
+      "problemMatcher": {
+        "base": "$msCompile",
+        "applyTo": "closedDocuments",
+        "source": "",
+        "pattern": {
+          "regexp": "^(?:\\s*)?(?:\\s*\\d+>)?(\\S.*)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\)\\s*:\\s+((?:fatal +)?error|warning|info)\\s+(\\w+\\d+)\\s*:\\s*(.*)$",
+          "kind": "Location",
+          "file": 1,
+          "location": 2,
+          "severity": 3,
+          "code": 4,
+          "message": 5
+        }
+      },
+      "group": "build",
+      "icon": {
+        "id": "package"
+      }
+    },
+    {
+      "label": "Clean",
+      "detail": "Cleans plugin solution",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "clean",
+        "--configuration",
+        "${input:buildConfig}"
+      ],
+      "problemMatcher": {
+        "base": "$msCompile",
+        "applyTo": "closedDocuments",
+        "source": "",
+        "pattern": {
+          "regexp": "^(?:\\s*)?(?:\\s*\\d+>)?(\\S.*)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\)\\s*:\\s+((?:fatal +)?error|warning|info)\\s+(\\w+\\d+)\\s*:\\s*(.*)$",
+          "kind": "Location",
+          "file": 1,
+          "location": 2,
+          "severity": 3,
+          "code": 4,
+          "message": 5
+        }
+      },
+      "group": "build",
+      "icon": {
+        "id": "trash"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "buildConfig",
+      "type": "pickString",
+      "description": "Build configuration",
+      "options": ["Debug", "Release"],
+      "default": "Debug"
+    },
+    {
+      "id": "removeVolumes",
+      "type": "pickString",
+      "description": "Remove database, file storage, and search data volumes when using named volumes?",
+      "options": [
+        { "label": "false", "value": "" },
+        { "label": "true", "value": "--volumes" }
+      ],
+      "default": ""
+    }
+  ]
+}

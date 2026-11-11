@@ -1,14 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
 using Telligent.Evolution.Extensibility;
+using Telligent.Evolution.Extensibility.Api.Version1;
 using Telligent.Evolution.Extensibility.Rest.Version2;
 using HttpMethod = Telligent.Evolution.Extensibility.Rest.Version2.HttpMethod;
 
 namespace ContentMetadata.Api;
 
-public class RestApi : IRestEndpoints
+public class RestApi : IRestEndpoints, IRestScopeGroups
 {
+	// Verint Community 14 only lets callers reach endpoints whose scopes they were granted.
+	// Without a scope assignment, endpoints fall into the uncategorised "noscope" group.
+	private const string ScopeGroupId = "contentmetadata";
+	private const string ScopeEntityId = "metadata";
+
+	public void RegisterScopeGroups(IRestScopeGroupRegistrationController controller)
+	{
+		controller.Add(ScopeGroupId, () => "Content Metadata", () => "Read and change metadata stored against content.",
+			new List<RestScopeEntity> { new(ScopeEntityId, () => "Metadata") });
+	}
+
+	private static RestRouteCreateOptions Scoped() => new()
+	{
+		ScopeEntityAssignments = new List<RestScopeEntityAssignment> { new(ScopeGroupId, ScopeEntityId) }
+	};
+
 	public string Description => "Allows access to IContent MetaData from widgets.";
 
 	public string Name => "ContentMetadata REST API";
@@ -21,7 +39,7 @@ public class RestApi : IRestEndpoints
 	{
 		#region GET
 
-		controller.Add(2, "metadata/{contentid}", HttpMethod.Get, req =>
+		controller.Add(2, "metadata/{ContentId}", HttpMethod.Get, req =>
 		{
 			var response = new RestResponse { Name = "ContentMetadata" };
 
@@ -31,7 +49,7 @@ public class RestApi : IRestEndpoints
 				if (param == null || !Guid.TryParse(param.ToString(), out var contentId))
 					throw new ArgumentException("ContentId is required.");
 
-				var key = req.Request.Params["Key"] ?? string.Empty;
+				var key = GetParameter(req, "Key") ?? string.Empty;
 
 				if (!string.IsNullOrEmpty(key))
 				{
@@ -53,10 +71,10 @@ public class RestApi : IRestEndpoints
 			}
 			catch (Exception ex)
 			{
-				response.Errors = new[] { ex.Message };
+				response.Errors = ToErrors(ex);
 			}
 			return response;
-		});
+		}, Scoped());
 
 		controller.Add(2, "findmetadata/{Key}", HttpMethod.Get, req =>
 		{
@@ -68,11 +86,11 @@ public class RestApi : IRestEndpoints
 				if (string.IsNullOrEmpty(dataKey))
 					throw new ArgumentException("Key is required");
 
-				var dataValue = req.Request.Params["Value"] ?? string.Empty;
+				var dataValue = GetParameter(req, "Value") ?? string.Empty;
 				if (string.IsNullOrEmpty(dataValue))
 					throw new ArgumentException("Value is required");
 
-				Guid.TryParse(req.Request.Params["ContentTypeId"] ?? string.Empty, out var contentTypeId);
+				Guid.TryParse(GetParameter(req, "ContentTypeId") ?? string.Empty, out var contentTypeId);
 
 				if (!string.IsNullOrEmpty(dataKey) && !string.IsNullOrEmpty(dataValue) && contentTypeId != Guid.Empty)
 				{
@@ -96,11 +114,11 @@ public class RestApi : IRestEndpoints
 			}
 			catch (Exception ex)
 			{
-				response.Errors = new[] { ex.Message };
+				response.Errors = ToErrors(ex);
 			}
 
 			return response;
-		});
+		}, Scoped());
 
 
 		#endregion
@@ -113,17 +131,17 @@ public class RestApi : IRestEndpoints
 
 			try
 			{
-				if (!Guid.TryParse(req.Request.Params["ContentId"] ?? string.Empty, out var contentId))
+				if (!Guid.TryParse(GetParameter(req, "ContentId") ?? string.Empty, out var contentId))
 					throw new ArgumentException("ContentId is required.");
 
-				if (!Guid.TryParse(req.Request.Params["ContentTypeId"] ?? string.Empty, out var contentTypeId))
+				if (!Guid.TryParse(GetParameter(req, "ContentTypeId") ?? string.Empty, out var contentTypeId))
 					throw new ArgumentException("ContentTypeId is required.");
 
-				var key = req.Request.Params["Key"] ?? string.Empty;
+				var key = GetParameter(req, "Key") ?? string.Empty;
 				if (string.IsNullOrEmpty(key))
 					throw new ArgumentException("Key is required.");
 
-				var value = req.Request.Params["Value"] ?? string.Empty;
+				var value = GetParameter(req, "Value") ?? string.Empty;
 				if (string.IsNullOrEmpty(value))
 					throw new ArgumentException("Value is required.");
 
@@ -134,11 +152,11 @@ public class RestApi : IRestEndpoints
 			}
 			catch (Exception ex)
 			{
-				response.Errors = new[] { ex.Message };
+				response.Errors = ToErrors(ex);
 			}
 
 			return response;
-		});
+		}, Scoped());
 
 
 		#endregion
@@ -151,10 +169,10 @@ public class RestApi : IRestEndpoints
 
 			try
 			{
-				if (!Guid.TryParse(req.Request.Params["ContentId"] ?? string.Empty, out var contentId))
+				if (!Guid.TryParse(GetParameter(req, "ContentId") ?? string.Empty, out var contentId))
 					throw new ArgumentException("ContentId is required.");
 
-				var key = req.Request.Params["Key"] ?? string.Empty;
+				var key = GetParameter(req, "Key") ?? string.Empty;
 				if (string.IsNullOrEmpty(key))
 					throw new ArgumentException("Key is required.");
 
@@ -162,13 +180,42 @@ public class RestApi : IRestEndpoints
 			}
 			catch (Exception ex)
 			{
-				response.Errors = new[] { ex.Message };
+				response.Errors = ToErrors(ex);
 			}
 
 			return response;
-		});
+		}, Scoped());
 
 		#endregion
+	}
+
+	/// <summary>
+	/// Validation messages are safe to return. Anything else (SQL errors, configuration problems)
+	/// is written to the event log and the caller gets a generic message, so internal details
+	/// such as schema names don't leak through the API.
+	/// </summary>
+	private static string[] ToErrors(Exception ex)
+	{
+		if (ex is ArgumentException)
+			return [ex.Message.Split(" (Parameter", 2)[0]];
+
+		Apis.Get<IEventLog>().Write($"ContentMetadata REST request failed: {ex}",
+			new EventLogEntryWriteOptions { EventType = "Error", Category = "ContentMetadata", EventId = 3665 });
+
+		return ["An error occurred while processing the request."];
+	}
+
+	/// <summary>
+	/// Reads a value from the query string, falling back to the form body. Replaces
+	/// HttpRequest.Params, which no longer exists on Verint Community 14.
+	/// </summary>
+	private static string GetParameter(IRestRequest req, string name)
+	{
+		var value = req.Request.Query.GetFirst(name, null);
+		if (value != null || string.Equals(req.Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+			return value;
+
+		return req.Form?.GetFirst(name, null);
 	}
 }
 
