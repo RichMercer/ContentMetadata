@@ -1,0 +1,72 @@
+root = true
+
+[*]
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+#
+# Tab indentation for imperative code, allowing for IDE-configurable/accessible formatting
+#
+
+# C#
+[*.cs]
+indent_style = tab
+
+# JavaScript
+[*.{js,jsm}]
+indent_style = tab
+
+# TypeScript
+[*.{ts,typescript}]
+indent_style = tab
+
+# PowerShell
+[*.{ps1,psm1}]
+indent_style = tab
+
+# Shell scripts (must use LF)
+[*.sh,]
+indent_style = tab
+end_of_line = lf
+
+# Docker
+[Dockerfile]
+end_of_line = lf
+indent_style = space
+indent_size = 4
+
+# Container
+[Containerfile]
+end_of_line = lf
+indent_style = space
+indent_size = 4
+
+# Markup
+[*.{htm,html,vm}]
+indent_style = tab
+
+#
+# Space indentation for config and indentation-sensitive languages
+#
+
+# Markdown
+[*.{md,markdown}]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+
+# JSON
+[*.json]
+indent_style = space
+indent_size = 2
+
+# YAML
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# XML
+[*.{xml,config,*proj,nuspec,props,resx,targets,tasks}]
+indent_style = space
+indent_size = 2

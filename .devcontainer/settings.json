@@ -1,0 +1,47 @@
+{
+  "Core": {
+    "SiteUrl": "http://localhost:5863",
+    "RunJobsInternally": false,
+    "EnableDeveloperMode": true,
+    "DisableEmail": false
+  },
+  "ConnectionStrings": {
+    "SiteSqlServer": "server=database;uid=community_user;pwd=T3ll1g3nt;Trusted_Connection=no;TrustServerCertificate=True;database=community_app",
+    "Reporting": "server=database;uid=community_user;pwd=T3ll1g3nt;Trusted_Connection=no;TrustServerCertificate=True;database=community_reporting"
+  },
+  "PluginConnectionStrings": {
+    "ContentMetadata.Plugins.ContentMetadataPlugin, ContentMetadata": "server=database;uid=contentmetadata;pwd=T3ll1g3nt;Trusted_Connection=no;TrustServerCertificate=True;database=community_app"
+  },
+  "CentralizedFileStorage": {
+    "RootPath": "/app/cfs"
+  },
+  "Search": {
+    "SolrContentUrl": "http://search:8983/solr/telligent-content/",
+    "SolrConversationsUrl": "http://search:8983/solr/telligent-conversations/"
+  },
+  "PluginEnablement": {
+    "Telligent.Evolution.Infra.Connector.InfraPlugin, Telligent.Evolution.Infra.Connector": true,
+    "Telligent.Evolution.Platform.Core.Email.SMTPEmailProvider, Telligent.Evolution.Platform": true,
+    "ContentMetadata.Plugins.ContentMetadataPlugin, ContentMetadata": true
+  },
+  "PluginConfiguration": {
+    "Telligent.Evolution.Infra.Connector.InfraPlugin, Telligent.Evolution.Infra.Connector:host": "http://infra:8080",
+    "Telligent.Evolution.Platform.Core.Email.SMTPEmailProvider, Telligent.Evolution.Platform:server": "smtp",
+    "Telligent.Evolution.Platform.Core.Email.SMTPEmailProvider, Telligent.Evolution.Platform:port": 1025
+  },
+  "Tracing": {
+    "EnableOtlp": true,
+    "OtlpEndpointProtocol": "grpc",
+    "OtlpEndpoint": "http://telemetry:18889/"
+  },
+  "Metrics": {
+    "EnableOtlp": true,
+    "OtlpEndpointProtocol": "grpc",
+    "OtlpEndpoint": "http://telemetry:18889/"
+  },
+  "Logging": {
+    "EnableOtlp": true,
+    "OtlpEndpointProtocol": "grpc",
+    "OtlpEndpoint": "http://telemetry:18889/"
+  }
+}

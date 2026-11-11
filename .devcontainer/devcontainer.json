@@ -1,0 +1,35 @@
+{
+  "name": "ContentMetadata (Verint Community 14)",
+  "dockerComposeFile": ["./compose.yml", "./compose.devcontainer.yml"],
+  "service": "workspace",
+  "workspaceFolder": "/community/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "ms-vscode.powershell",
+        "ms-mssql.mssql",
+        "EditorConfig.EditorConfig",
+        "sodatea.velocity",
+        "ms-azuretools.vscode-containers"
+      ],
+      "settings": {
+        "mssql.connections": [
+          {
+            "authenticationType": "SqlLogin",
+            "profileName": "database",
+            "server": "database",
+            "user": "SA",
+            "password": "T3ll1g3nt",
+            "savePassword": false,
+            "trustServerCertificate": true
+          }
+        ]
+      }
+    }
+  },
+  "remoteUser": "app"
+}

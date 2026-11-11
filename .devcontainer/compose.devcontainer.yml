@@ -1,0 +1,25 @@
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/dotnet:10.0
+    command: sleep infinity
+    environment:
+      PLUGIN_BUILD_ENV: devcontainer
+    networks:
+      - community
+    volumes:
+      - cfs:/community/cfs
+      - ../:/community/workspace
+      - ./settings.json:/community/config/settings.json:ro
+      - ../artifacts/build:/app/cfs/plugins
+      - ./tasks.devcontainer.json:/community/workspace/.vscode/tasks.json
+    depends_on:
+      database:
+        condition: service_healthy
+      search:
+        condition: service_healthy
+      installer:
+        condition: service_completed_successfully
+      plugin-database:
+        condition: service_completed_successfully
+      cfs-init:
+        condition: service_completed_successfully

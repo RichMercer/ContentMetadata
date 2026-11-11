@@ -6,6 +6,14 @@
     <AssemblyName>ContentMetadata</AssemblyName>
     <LangVersion>latest</LangVersion>
 
+    <!-- Build output is mounted into the local Community stack at /app/cfs/plugins
+         (see .devcontainer/compose.yml), matching the community-plugin template. -->
+    <OutputPath>..\artifacts\build</OutputPath>
+    <PublishDir>..\artifacts\publish</PublishDir>
+    <PackageOutputPath>..\artifacts\package</PackageOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
     <!-- Major version tracks the supported Verint Community version. -->
     <Version>14.0.0</Version>
 
@@ -13,7 +21,7 @@
     <Title>ContentMetadata for Verint Community</Title>
     <Authors>RichMercer</Authors>
     <Description>ContentMetadata for Verint Community adds support for Metadata on Verint Community IContent entities. It was built as a replacement for ExtendedAttributes for developers who were using them to store their own custom data.</Description>
-    <PackageReleaseNotes>Updated for Verint Community 14 and .NET 10.</PackageReleaseNotes>
+    <PackageReleaseNotes>Updated for Verint Community 14 and .NET 10. Metadata now lives in the plugin's own schema; data in the legacy dbo.custom_Metadata table is migrated automatically when the plugin is installed.</PackageReleaseNotes>
     <Copyright>Copyright 2026</Copyright>
     <PackageTags>Verint Community IContent Metadata ExtendedAttributes</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -22,15 +30,29 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
+  <!-- Both assemblies are supplied by the Community host at runtime, so they are
+       compile-time only and never copied next to the plugin. -->
   <ItemGroup>
-    <PackageReference Include="Verint.Community.Platform" Version="14.0.0.684" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
-    <!-- Overrides the vulnerable 9.0.18 pulled in by Microsoft.Data.SqlClient. -->
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.15" />
+    <PackageReference Include="Verint.Community.Platform" Version="14.0.0.684">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <!-- Matches the version shipped in the Verint Community 14.0.0.684 web image. -->
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- System.Security.Cryptography.Pkcs only reaches this project transitively through the
+       compile-time Microsoft.Data.SqlClient reference above; it is never shipped with the plugin,
+       and the Community host supplies its own copy at runtime. -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2fmv-rv2c-59x7" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-846f-f764-76mx" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\Sql\Install.sql" />
+    <EmbeddedResource Include="Resources\Sql\MigrateLegacyData.sql" />
     <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 

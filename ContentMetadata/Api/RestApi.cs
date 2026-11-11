@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
 using Telligent.Evolution.Extensibility;
@@ -7,8 +8,24 @@ using HttpMethod = Telligent.Evolution.Extensibility.Rest.Version2.HttpMethod;
 
 namespace ContentMetadata.Api;
 
-public class RestApi : IRestEndpoints
+public class RestApi : IRestEndpoints, IRestScopeGroups
 {
+	// Verint Community 14 only lets callers reach endpoints whose scopes they were granted.
+	// Without a scope assignment, endpoints fall into the uncategorised "noscope" group.
+	private const string ScopeGroupId = "contentmetadata";
+	private const string ScopeEntityId = "metadata";
+
+	public void RegisterScopeGroups(IRestScopeGroupRegistrationController controller)
+	{
+		controller.Add(ScopeGroupId, () => "Content Metadata", () => "Read and change metadata stored against content.",
+			new List<RestScopeEntity> { new(ScopeEntityId, () => "Metadata") });
+	}
+
+	private static RestRouteCreateOptions Scoped() => new()
+	{
+		ScopeEntityAssignments = new List<RestScopeEntityAssignment> { new(ScopeGroupId, ScopeEntityId) }
+	};
+
 	public string Description => "Allows access to IContent MetaData from widgets.";
 
 	public string Name => "ContentMetadata REST API";
@@ -56,7 +73,7 @@ public class RestApi : IRestEndpoints
 				response.Errors = new[] { ex.Message };
 			}
 			return response;
-		});
+		}, Scoped());
 
 		controller.Add(2, "findmetadata/{Key}", HttpMethod.Get, req =>
 		{
@@ -100,7 +117,7 @@ public class RestApi : IRestEndpoints
 			}
 
 			return response;
-		});
+		}, Scoped());
 
 
 		#endregion
@@ -138,7 +155,7 @@ public class RestApi : IRestEndpoints
 			}
 
 			return response;
-		});
+		}, Scoped());
 
 
 		#endregion
@@ -166,7 +183,7 @@ public class RestApi : IRestEndpoints
 			}
 
 			return response;
-		});
+		}, Scoped());
 
 		#endregion
 	}
@@ -177,7 +194,11 @@ public class RestApi : IRestEndpoints
 	/// </summary>
 	private static string GetParameter(IRestRequest req, string name)
 	{
-		return req.Request.Query.GetFirst(name, null) ?? req.Form?.GetFirst(name, null);
+		var value = req.Request.Query.GetFirst(name, null);
+		if (value != null || string.Equals(req.Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+			return value;
+
+		return req.Form?.GetFirst(name, null);
 	}
 }
 

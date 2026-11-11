@@ -20,13 +20,49 @@ Install-Package TelligentContentMetadata
 | --- | --- | --- |
 | 14.x | 14 | .NET 10 |
 | 1.x | 11 to 13 | .NET Framework 4.7.2 |
-To access the API's, you will need to enable the plugin `ContentMetadata Plugin` in your Telligent Community instance. If your sites' connection string has dbowner access to your database, the install script will be run automatically when the plugin is enabled. If not, or you would prefer to run the script yourself, you can execute the SQL file here.
 
-* [SQL Install Script](https://raw.githubusercontent.com/RichMercer/ContentMetadata/master/ContentMetadata/Resources/Sql/Install.sql)
+To access the APIs, enable the `ContentMetadata Plugin` in your Verint Community instance. On install, the plugin creates its `Metadata` table in its own SQL Server schema.
+
+## Database access (Verint Community 14)
+
+Verint Community 14 no longer lets plugins use the Community database directly. ContentMetadata implements `ISqlServerConnectedPlugin`, so the platform supplies a connection string that can only reach the plugin's own schema.
+
+* **Verint hosted:** nothing to configure. The schema and connection string are created for you.
+* **Self-hosted:** create a SQL Server login and user for the plugin, give the user its own default schema (owned by that user) and `CREATE TABLE` permission, then add the connection string to the `PluginConnectionStrings` section of your [environment configuration](https://community.telligent.com/community/14/a/user-documentation/UD2221/how-do-i-configure-environment-options):
+
+  ```json
+  "PluginConnectionStrings": {
+    "ContentMetadata.Plugins.ContentMetadataPlugin, ContentMetadata": "server=...;database=...;uid=contentmetadata;pwd=...;TrustServerCertificate=True"
+  }
+  ```
+
+  Without this entry, the platform won't initialise the plugin. [.devcontainer/sql/plugin-database-user.sql](.devcontainer/sql/plugin-database-user.sql) is a working example.
+
+## Upgrading from 1.x
+
+Earlier versions stored metadata in `[dbo].[custom_Metadata]` with stored procedures in `dbo`. The plugin also implements `IDboAccessSqlServerConnectedPlugin`, but only for migration; nothing reads or writes `dbo` at runtime. When the plugin installs, it:
+
+1. Copy every row from `[dbo].[custom_Metadata]` into `[<plugin schema>].[Metadata]`, skipping rows that are already there.
+2. Check that every legacy row is present in the plugin schema.
+3. Remove the legacy table and the `custom_Metadata_*` procedures, but only if step 2 succeeded. If any row is missing, the legacy table is kept and an error is written to the event log (category `ContentMetadata`, event 3662).
+
+The migration runs every time the plugin is installed, and it is safe to repeat. Back up the database before upgrading.
+
+**Self-hosted sites need one extra step.** The platform-managed read access to `dbo` during install is only available in Verint's hosted environment. On a self-hosted site, the plugin connects with the login in `PluginConnectionStrings`, so before upgrading, grant that user read access to the legacy table:
+
+```sql
+GRANT SELECT ON [dbo].[custom_Metadata] TO [contentmetadata];
+```
+
+Once the data is migrated, the plugin drops the table, and the grant goes with it. If the table isn't visible during install, the plugin writes event 3664 to the event log and leaves `dbo` alone. Install only runs when the plugin version changes, so make the grant before you deploy 14.x.
 
 # Usage
 
-Each of the 3 API's use the same base implementation meaning you get a consisisten set of abilities. Each provides the ability to List, Get, Set and Delete metadata associated with an IContent entity. In all cases the ContentId of the content you are storing data against must be provided. Currently there is no REST API due to concerns around information disclosure. I am looking at ways to secure the access to ContentMetada calls inline with the platforms own checks on permissions.
+Each of the 3 API's use the same base implementation meaning you get a consisisten set of abilities. Each provides the ability to List, Get, Set and Delete metadata associated with an IContent entity. In all cases the ContentId of the content you are storing data against must be provided. 
+
+## REST API scopes
+
+Verint Community 14 only lets a caller use REST endpoints whose scopes it has been granted. The ContentMetadata endpoints (`metadata/{ContentId}`, `findmetadata/{Key}`, and POST and DELETE on `metadata`) belong to the **Content Metadata** scope group: `contentmetadata.metadata.readonly` for GET and the matching modify scope for POST and DELETE. Grant these to the API keys, OAuth clients or widgets that need them. The endpoints don't do per-content permission checks, so grant them only to trusted callers.
 
 ## Search
 
@@ -127,3 +163,37 @@ Below is a list of entities that implement IContent. The list shows commonly use
 * User
 * Wiki
 * WikiPage
+
+# Development
+
+The repository includes the Verint Community 14 local stack from the `community-plugin` template (`dotnet new install Verint.Community.Templates`, then `dotnet new community-plugin`). It runs web and job nodes, SQL Server, Solr, the infra cache and message bus, the Aspire telemetry dashboard and MailPit in Docker Compose. Build output in `artifacts/build` is mounted into the stack as `/app/cfs/plugins`.
+
+## Local endpoints
+
+| Service | URL |
+| --- | --- |
+| Community (admin / p) | http://localhost:5863 |
+| Telemetry dashboard (Aspire) | http://localhost:5260 |
+| MailPit | http://localhost:5397 |
+| Solr | http://localhost:5361 |
+| SQL Server (SA / T3ll1g3nt) | localhost,5994 |
+
+These ports are 100 above the template defaults, so this stack can run alongside other Community projects.
+
+## Getting started
+
+1. Accept the SQL Server End-User License Agreement once: `bash scripts/accept-mssql-eula.sh` (or `pwsh scripts\accept-mssql-eula.ps1`, or the VS Code task). This writes `.devcontainer/mssql-eula.env`, which is git-ignored.
+2. Start the stack in one of two ways:
+   * **Dev container:** open the folder in VS Code and choose **Reopen in Container**. You don't need .NET 10 on the host.
+   * **Native:** run `bash scripts/compose.sh up` and build on the host with .NET 10.
+3. Build the plugin with `dotnet build ContentMetadata/ContentMetadata.csproj` (or the **Build** task), then restart Community with `bash scripts/compose.sh restart web job infra` (or the **Compose Restart** task).
+
+`.devcontainer/settings.json` enables the plugin and supplies its `PluginConnectionStrings` entry. The one-shot `plugin-database` service creates the `contentmetadata` SQL login, user and schema it connects with.
+
+## Testing the 1.x migration
+
+Start the stack with `SEED_LEGACY_METADATA=true bash scripts/compose.sh up` on a fresh database. Before Community starts, the `plugin-database` service creates `[dbo].[custom_Metadata]` with three sample rows. When the plugin installs, those rows should appear in `[contentmetadata].[Metadata]` and the dbo table should be removed. To start over, run `bash scripts/compose.sh down --volumes`.
+
+## Packaging
+
+`dotnet pack ContentMetadata/ContentMetadata.csproj -c Release` writes the NuGet package to `artifacts/package`.

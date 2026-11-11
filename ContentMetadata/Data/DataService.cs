@@ -1,241 +1,238 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Data.SqlClient;
-using Telligent.Evolution.Extensibility;
-using Telligent.Evolution.Extensibility.Api.Version1;
 
 namespace ContentMetadata.Data;
 
+/// <summary>
+/// Stores metadata in the plugin's own SQL Server schema. Verint Community 14 supplies
+/// the connection string and schema through <see cref="Telligent.Evolution.Extensibility.Version1.ISqlServerConnectedPlugin"/>;
+/// that connection only has access to the plugin schema.
+/// </summary>
 internal static class DataService
 {
-	#region Helper Methods
+	private const string LegacyTable = "custom_Metadata";
 
-	private static string _connectionString;
+	internal static readonly string[] LegacyProcedures =
+	[
+		"custom_Metadata_List",
+		"custom_Metadata_List_Key",
+		"custom_Metadata_Set",
+		"custom_Metadata_Delete",
+		"custom_Metadata_Delete_Key"
+	];
 
-	/// <summary>
-	/// Set by the plugin when Verint Community supplies its SQL Server controller.
-	/// </summary>
-	internal static void SetConnectionString(string connectionString)
+	internal static string LegacyTableName => LegacyTable;
+
+	private static volatile string _connectionString;
+	private static volatile string _schema;
+
+	#region Configuration
+
+	internal static void Configure(string connectionString, string schema)
 	{
 		_connectionString = connectionString;
+		_schema = string.IsNullOrWhiteSpace(schema) ? null : schema;
 	}
+
+	internal static bool IsConfigured => !string.IsNullOrEmpty(_connectionString);
 
 	private static SqlConnection GetSqlConnection()
 	{
-		if (string.IsNullOrEmpty(_connectionString))
-			throw new InvalidOperationException("ContentMetadata has not been given a SQL Server connection by the platform. Ensure the ContentMetadata Plugin is enabled.");
+		if (!IsConfigured)
+			throw new InvalidOperationException("ContentMetadata has not been given a SQL Server connection by the platform. Ensure the ContentMetadata Plugin is enabled and, on self-hosted sites, that it has an entry in PluginConnectionStrings.");
 
 		return new SqlConnection(_connectionString);
 	}
 
-	private static SqlCommand CreateSprocCommand(string sprocName, SqlConnection connection)
+	/// <summary>
+	/// The plugin schema, falling back to the connection's default schema if the platform did not provide one.
+	/// </summary>
+	private static string Schema
 	{
-		return new SqlCommand("dbo." + sprocName, connection) { CommandType = CommandType.StoredProcedure };
-	}
-
-	private static bool HasRequiredPermissions()
-	{
-		const string statement = @"IF IS_ROLEMEMBER ('db_owner') = 1
-                                    BEGIN
-                                        SELECT 1
-                                    END
-                                    ELSE
-                                    BEGIN
-	                                    SELECT 0
-                                    END";
-
-		int value;
-		using (var connection = GetSqlConnection())
+		get
 		{
+			if (_schema != null)
+				return _schema;
+
+			using var connection = GetSqlConnection();
+			using var command = new SqlCommand("SELECT SCHEMA_NAME()", connection);
 			connection.Open();
-
-			using (var command = new SqlCommand(statement, connection))
-			{
-				int.TryParse(command.ExecuteScalar().ToString(), out value);
-			}
+			_schema = (string)command.ExecuteScalar();
+			return _schema;
 		}
-
-		return Convert.ToBoolean(value);
 	}
 
-	public static bool IsInstalled()
-	{
-		const string statement = @"SELECT 1 FROM SYS.OBJECTS WHERE OBJECT_ID = OBJECT_ID(N'[dbo].[custom_MetaData]') AND TYPE IN (N'U')";
+	private static string QuotedSchema => Schema.Replace("]", "]]");
 
-		int value;
-		using (var connection = GetSqlConnection())
-		{
-			connection.Open();
-
-			using (var command = new SqlCommand(statement, connection))
-			{
-				var result = command.ExecuteScalar();
-
-				int.TryParse(result?.ToString(), out value);
-			}
-		}
-
-		return Convert.ToBoolean(value);
-	}
+	private static string Table => $"[{QuotedSchema}].[Metadata]";
 
 	#endregion
 
-	#region IInstallablePlugin Methods
+	#region Install and migration
 
 	internal static void Install()
 	{
-		if (!HasRequiredPermissions())
-		{
-			Apis.Get<IEventLog>().Write("Unable to install SQL scripts for plugin", new EventLogEntryWriteOptions { EventType = "Warning", Category = "ContentMetadata", EventId = 3660 });
-			return;
-		}
+		ExecuteScript("Install.sql");
+	}
 
+	/// <summary>
+	/// True when the pre-v14 dbo table exists and is visible to the plugin connection.
+	/// </summary>
+	internal static bool LegacyTableExists()
+	{
+		using var connection = GetSqlConnection();
+		using var command = new SqlCommand($"SELECT CASE WHEN OBJECT_ID(N'[dbo].[{LegacyTable}]', N'U') IS NULL THEN 0 ELSE 1 END", connection);
+		connection.Open();
+		return (int)command.ExecuteScalar() == 1;
+	}
+
+	/// <summary>
+	/// Copies legacy dbo rows into the plugin schema.
+	/// </summary>
+	/// <returns>The number of legacy rows still missing from the plugin schema; 0 means everything was copied.</returns>
+	internal static int MigrateLegacyData()
+	{
+		var remaining = 0;
 		using var connection = GetSqlConnection();
 		connection.Open();
-		foreach (var statement in GetBatchedStatementsFromSql())
+		using var transaction = connection.BeginTransaction();
+
+		foreach (var statement in GetBatchedStatements("MigrateLegacyData.sql"))
+		{
+			using var command = new SqlCommand(statement, connection, transaction);
+			remaining = Convert.ToInt32(command.ExecuteScalar());
+		}
+
+		transaction.Commit();
+		return remaining;
+	}
+
+	private static void ExecuteScript(string resourceName)
+	{
+		using var connection = GetSqlConnection();
+		connection.Open();
+		foreach (var statement in GetBatchedStatements(resourceName))
 		{
 			using var command = new SqlCommand(statement, connection);
 			command.ExecuteNonQuery();
 		}
 	}
 
-	private static IEnumerable<string> GetBatchedStatementsFromSql()
+	private static IEnumerable<string> GetBatchedStatements(string resourceName)
 	{
-		var sqlScript = GetStatementsFromSql();
-		return Regex.Split(sqlScript, @"^\s*GO\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline).Select(statement => Regex.Replace(statement, @"(?:^SET\s+.*?$|\/\*.*?\*\/|--.*?$)", "\r\n",
-			RegexOptions.IgnoreCase | RegexOptions.Multiline).Trim()).Where(sanitizedStatement => sanitizedStatement.Length > 0);
+		var script = ReadResource(resourceName).Replace("{Schema}", QuotedSchema);
+		return Regex.Split(script, @"^\s*GO\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline)
+			.Select(statement => statement.Trim())
+			.Where(statement => statement.Length > 0);
 	}
 
-	private static string GetStatementsFromSql()
+	private static string ReadResource(string resourceName)
 	{
-		var stream = typeof(DataService).Assembly.GetManifestResourceStream("ContentMetadata.Resources.Sql.Install.sql");
-		if (stream == null || stream.Length == 0)
-			return string.Empty;
-
-		using (stream)
-		{
-			var data = new byte[stream.Length];
-			_ = stream.Read(data, 0, data.Length);
-			var text = Encoding.UTF8.GetString(data);
-			return text[0] > 255 ? text.Substring(1) : text;
-		}
+		using var stream = typeof(DataService).Assembly.GetManifestResourceStream($"ContentMetadata.Resources.Sql.{resourceName}")
+			?? throw new InvalidOperationException($"Embedded SQL resource {resourceName} was not found.");
+		using var reader = new StreamReader(stream);
+		return reader.ReadToEnd();
 	}
 
 	#endregion
 
 	public static List<ContentMetadata> List(Guid contentId)
 	{
-		var items = new List<ContentMetadata>();
-
 		using var connection = GetSqlConnection();
-		using var command = CreateSprocCommand("[custom_MetaData_List]", connection);
+		using var command = new SqlCommand($"SELECT [ContentId], [ContentTypeId], [DataKey], [DataValue] FROM {Table} WHERE [ContentId] = @ContentId", connection);
 		command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
 
-		connection.Open();
-
-		using (var dr = command.ExecuteReader())
-		{
-			while (dr.Read())
-			{
-				items.Add(Populate(dr));
-			}
-			// Done with the reader and the connection
-			dr.Close();
-		}
-
-		connection.Close();
-
-		return items;
+		return ReadAll(connection, command);
 	}
 
 	public static List<ContentMetadata> ListContent(string key, string value)
 	{
-		var items = new List<ContentMetadata>();
-
 		using var connection = GetSqlConnection();
-		using var command = CreateSprocCommand("[custom_Metadata_List_Key]", connection);
+		using var command = new SqlCommand($"SELECT [ContentId], [ContentTypeId], [DataKey], [DataValue] FROM {Table} WHERE [DataKey] = @DataKey AND [DataValue] = @DataValue", connection);
 		command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
-		command.Parameters.Add("@DataValue", SqlDbType.NVarChar).Value = value;
-		connection.Open();
+		command.Parameters.Add("@DataValue", SqlDbType.NVarChar, -1).Value = value;
 
-		using (var dr = command.ExecuteReader())
-		{
-			while (dr.Read())
-			{
-				items.Add(Populate(dr));
-			}
-			// Done with the reader and the connection
-			dr.Close();
-		}
-
-		connection.Close();
-
-		return items;
+		return ReadAll(connection, command);
 	}
-
 
 	public static void Delete(Guid contentId)
 	{
 		using var connection = GetSqlConnection();
-		using var command = CreateSprocCommand("[custom_MetaData_Delete]", connection);
+		using var command = new SqlCommand($"DELETE FROM {Table} WHERE [ContentId] = @ContentId", connection);
 		command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
 
 		connection.Open();
 		command.ExecuteNonQuery();
-		connection.Close();
 	}
 
 	public static void Delete(Guid contentId, string key)
 	{
 		using var connection = GetSqlConnection();
-		using var command = CreateSprocCommand("[custom_MetaData_Delete_Key]", connection);
+		using var command = new SqlCommand($"DELETE FROM {Table} WHERE [ContentId] = @ContentId AND [DataKey] = @DataKey", connection);
 		command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
 		command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
 
 		connection.Open();
 		command.ExecuteNonQuery();
-		connection.Close();
 	}
 
+	/// <summary>
+	/// Inserts or updates a value. An empty value deletes the key, matching the behaviour of the
+	/// pre-v14 custom_Metadata_Set procedure.
+	/// </summary>
 	public static ContentMetadata Set(Guid contentId, Guid contentTypeId, string key, string value)
 	{
-		using (var connection = GetSqlConnection())
-		{
-			using (var command = CreateSprocCommand("[custom_MetaData_Set]", connection))
-			{
-				command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
-				command.Parameters.Add("@ContentTypeId", SqlDbType.UniqueIdentifier).Value = contentTypeId;
-				command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
-				command.Parameters.Add("@DataValue", SqlDbType.Text).Value = value;
+		var sql = $@"
+SET XACT_ABORT ON;
+BEGIN TRANSACTION;
+IF LEN(@DataValue) > 0
+BEGIN
+	UPDATE {Table} WITH (UPDLOCK, SERIALIZABLE) SET [DataValue] = @DataValue
+	WHERE [ContentId] = @ContentId AND [DataKey] = @DataKey;
 
-				connection.Open();
-				using (var reader = command.ExecuteReader(CommandBehavior.SingleRow))
-				{
-					if (reader.Read())
-					{
-						return Populate(reader);
-					}
-				}
-				connection.Close();
-			}
-		}
+	IF @@ROWCOUNT = 0
+		INSERT INTO {Table} ([ContentId], [ContentTypeId], [DataKey], [DataValue])
+		VALUES (@ContentId, @ContentTypeId, @DataKey, @DataValue);
+END
+ELSE
+	DELETE FROM {Table} WHERE [ContentId] = @ContentId AND [DataKey] = @DataKey;
+COMMIT TRANSACTION;
 
-		return new ContentMetadata();
+SELECT [ContentId], [ContentTypeId], [DataKey], [DataValue] FROM {Table} WHERE [ContentId] = @ContentId AND [DataKey] = @DataKey;";
+
+		using var connection = GetSqlConnection();
+		using var command = new SqlCommand(sql, connection);
+		command.Parameters.Add("@ContentId", SqlDbType.UniqueIdentifier).Value = contentId;
+		command.Parameters.Add("@ContentTypeId", SqlDbType.UniqueIdentifier).Value = contentTypeId;
+		command.Parameters.Add("@DataKey", SqlDbType.NVarChar, 64).Value = key;
+		command.Parameters.Add("@DataValue", SqlDbType.NVarChar, -1).Value = (object)value ?? string.Empty;
+
+		return ReadAll(connection, command).FirstOrDefault() ?? new ContentMetadata();
+	}
+
+	private static List<ContentMetadata> ReadAll(SqlConnection connection, SqlCommand command)
+	{
+		var items = new List<ContentMetadata>();
+		connection.Open();
+		using var reader = command.ExecuteReader();
+		while (reader.Read())
+			items.Add(Populate(reader));
+
+		return items;
 	}
 
 	private static ContentMetadata Populate(IDataReader reader)
 	{
-		var article = new ContentMetadata(
-			reader["ContentId"] == null ? Guid.Empty : new Guid(reader["ContentId"].ToString()),
-			reader["ContentTypeId"] == null ? Guid.Empty : new Guid(reader["ContentTypeId"].ToString()),
-			reader["DataKey"].ToString(),
-			reader["DataValue"].ToString()
+		return new ContentMetadata(
+			reader.GetGuid(0),
+			reader.GetGuid(1),
+			reader.GetString(2),
+			reader.GetString(3)
 		);
-
-		return article;
 	}
 }
