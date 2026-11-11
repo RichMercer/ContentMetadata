@@ -24,7 +24,7 @@ dotnet add package TelligentContentMetadata
 | Package version | Verint Community | .NET |
 | --- | --- | --- |
 | 14.x | 14 | .NET 10 |
-| 1.x | 11 to 13 | .NET Framework 4.7.2 |
+| 1.x ([`release/1.x`](https://github.com/RichMercer/ContentMetadata/tree/release/1.x)) | 11 to 13 | .NET Framework 4.7.2 |
 
 Deploy `ContentMetadata.dll` with your other plugins, then enable **ContentMetadata Plugin** in Administration. On install, the plugin creates its `Metadata` table in its own SQL Server schema.
 
@@ -227,16 +227,13 @@ Start the stack with `SEED_LEGACY_METADATA=true bash scripts/compose.sh up` on a
 
 `dotnet pack ContentMetadata/ContentMetadata.csproj -c Release` writes the NuGet package to `artifacts/package`.
 
-## Releasing
+## Contributing and releasing
 
-[.github/workflows/nuget.yml](.github/workflows/nuget.yml) builds and packs on every push and pull request. It publishes to nuget.org only when you push a `v14.x` tag, and the package version comes from the tag:
+`main` is protected: every change goes through a pull request, and the build must pass before it can merge. Version 1.x (Telligent Community 11 to 13) lives on the [`release/1.x`](https://github.com/RichMercer/ContentMetadata/tree/release/1.x) branch.
 
-```sh
-git tag v14.0.0
-git push origin v14.0.0
-```
+[.github/workflows/nuget.yml](.github/workflows/nuget.yml) builds and packs every pull request and every push to `main`. To release, bump `<Version>` in [ContentMetadata.csproj](ContentMetadata/ContentMetadata.csproj) in a pull request. When it merges, the workflow sees that the version isn't on nuget.org yet and publishes it. A push to `main` that doesn't change the version builds but doesn't publish.
 
-Publishing uses [NuGet Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing), so there's no API key to store or rotate. It also runs in the protected `nuget` environment, which you approve before the push. The one-time setup is listed at the top of the workflow.
+Publishing runs in the protected `nuget` environment, so it waits for your approval. It uses [NuGet Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing), so there's no API key to store or rotate, and then tags the commit `v<version>` and creates a GitHub release with the package attached. The one-time setup is listed at the top of the workflow.
 
 ## Documentation site
 

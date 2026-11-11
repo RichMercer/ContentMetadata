@@ -15,13 +15,13 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
 
     <!-- Major version tracks the supported Verint Community version. -->
-    <Version>14.0.0</Version>
+    <Version>14.0.1</Version>
 
     <PackageId>TelligentContentMetadata</PackageId>
     <Title>ContentMetadata for Verint Community</Title>
     <Authors>RichMercer</Authors>
     <Description>ContentMetadata for Verint Community adds support for Metadata on Verint Community IContent entities. It was built as a replacement for ExtendedAttributes for developers who were using them to store their own custom data.</Description>
-    <PackageReleaseNotes>Updated for Verint Community 14 and .NET 10. Metadata now lives in the plugin's own schema; data in the legacy dbo.custom_Metadata table is migrated automatically when the plugin is installed.</PackageReleaseNotes>
+    <PackageReleaseNotes>14.0.1: rejects keys over 64 characters instead of truncating them, hides internal error details from REST callers, and fixes stale cached values after a delete. 14.0.0: updated for Verint Community 14 and .NET 10. Metadata now lives in the plugin's own schema; data in the legacy dbo.custom_Metadata table is migrated automatically when the plugin is installed.</PackageReleaseNotes>
     <Copyright>Copyright 2026</Copyright>
     <PackageTags>Verint Community IContent Metadata ExtendedAttributes</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
