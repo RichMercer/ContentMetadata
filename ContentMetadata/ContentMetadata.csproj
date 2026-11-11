@@ -28,6 +28,17 @@
     <PackageProjectUrl>https://github.com/RichMercer/ContentMetadata</PackageProjectUrl>
     <RepositoryUrl>https://github.com/RichMercer/ContentMetadata</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- Symbols and Source Link (built into the .NET SDK for GitHub repositories). -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+
+  <!-- Deterministic paths in CI builds so Source Link and reproducible builds work. -->
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <!-- Both assemblies are supplied by the Community host at runtime, so they are

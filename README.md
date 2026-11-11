@@ -197,3 +197,14 @@ Start the stack with `SEED_LEGACY_METADATA=true bash scripts/compose.sh up` on a
 ## Packaging
 
 `dotnet pack ContentMetadata/ContentMetadata.csproj -c Release` writes the NuGet package to `artifacts/package`.
+
+## Releasing
+
+[.github/workflows/nuget.yml](.github/workflows/nuget.yml) builds and packs on every push and pull request. It publishes to nuget.org only when you push a `v14.x` tag, and the package version comes from the tag:
+
+```sh
+git tag v14.0.0
+git push origin v14.0.0
+```
+
+Publishing uses [NuGet Trusted Publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing), so there's no API key to store or rotate. It also runs in the protected `nuget` environment, which you approve before the push. The one-time setup is listed at the top of the workflow.
