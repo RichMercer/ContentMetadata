@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Serialization;
 using Telligent.Evolution.Extensibility;
+using Telligent.Evolution.Extensibility.Api.Version1;
 using Telligent.Evolution.Extensibility.Rest.Version2;
 using HttpMethod = Telligent.Evolution.Extensibility.Rest.Version2.HttpMethod;
 
@@ -70,7 +71,7 @@ public class RestApi : IRestEndpoints, IRestScopeGroups
 			}
 			catch (Exception ex)
 			{
-				response.Errors = new[] { ex.Message };
+				response.Errors = ToErrors(ex);
 			}
 			return response;
 		}, Scoped());
@@ -113,7 +114,7 @@ public class RestApi : IRestEndpoints, IRestScopeGroups
 			}
 			catch (Exception ex)
 			{
-				response.Errors = new[] { ex.Message };
+				response.Errors = ToErrors(ex);
 			}
 
 			return response;
@@ -151,7 +152,7 @@ public class RestApi : IRestEndpoints, IRestScopeGroups
 			}
 			catch (Exception ex)
 			{
-				response.Errors = new[] { ex.Message };
+				response.Errors = ToErrors(ex);
 			}
 
 			return response;
@@ -179,13 +180,29 @@ public class RestApi : IRestEndpoints, IRestScopeGroups
 			}
 			catch (Exception ex)
 			{
-				response.Errors = new[] { ex.Message };
+				response.Errors = ToErrors(ex);
 			}
 
 			return response;
 		}, Scoped());
 
 		#endregion
+	}
+
+	/// <summary>
+	/// Validation messages are safe to return. Anything else (SQL errors, configuration problems)
+	/// is written to the event log and the caller gets a generic message, so internal details
+	/// such as schema names don't leak through the API.
+	/// </summary>
+	private static string[] ToErrors(Exception ex)
+	{
+		if (ex is ArgumentException)
+			return [ex.Message.Split(" (Parameter", 2)[0]];
+
+		Apis.Get<IEventLog>().Write($"ContentMetadata REST request failed: {ex}",
+			new EventLogEntryWriteOptions { EventType = "Error", Category = "ContentMetadata", EventId = 3665 });
+
+		return ["An error occurred while processing the request."];
 	}
 
 	/// <summary>

@@ -9,11 +9,13 @@ public class ContentMetadataApi : IContentMetadataApi
 {
 	private const string CacheKey = "ContentMetadata-ContentId:{0}";
 
+	// Matches [DataKey] nvarchar(64). Longer keys would be silently truncated by the SQL
+	// parameter, so a write to one key could overwrite or delete a different one.
+	internal const int MaxKeyLength = 64;
+
 	public IReadOnlyList<ContentMetadata> List(Guid contentId)
 	{
-		{
-			return CacheHelper.Get(string.Format(CacheKey, contentId), () => DataService.List(contentId));
-		}
+		return CacheHelper.Get(string.Format(CacheKey, contentId), () => DataService.List(contentId));
 	}
 
 	public ContentMetadata Get(Guid contentId, string key)
@@ -25,7 +27,8 @@ public class ContentMetadataApi : IContentMetadataApi
 
 	public IReadOnlyList<ContentMetadata> List(string key, string value)
 	{
-		return  DataService.ListContent(key,value);
+		ValidateKey(key);
+		return DataService.ListContent(key, value ?? string.Empty);
 	}
 
 	public ContentMetadata Get(Guid contentTypeId, string key, string value)
@@ -41,6 +44,8 @@ public class ContentMetadataApi : IContentMetadataApi
 	public void Delete(Guid contentId)
 	{
 		DataService.Delete(contentId);
+
+		CacheHelper.Remove(string.Format(CacheKey, contentId));
 	}
 
 	/// <summary>
@@ -50,6 +55,7 @@ public class ContentMetadataApi : IContentMetadataApi
 	/// <param name="key">The key of the metadata to delete.</param>
 	public void Delete(Guid contentId, string key)
 	{
+		ValidateKey(key);
 		DataService.Delete(contentId, key);
 
 		CacheHelper.Remove(string.Format(CacheKey, contentId));
@@ -57,10 +63,19 @@ public class ContentMetadataApi : IContentMetadataApi
 
 	public ContentMetadata Set(Guid contentId, Guid contentTypeId, string key, string value)
 	{
+		ValidateKey(key);
 		var item = DataService.Set(contentId, contentTypeId, key, value);
 		CacheHelper.Remove(string.Format(CacheKey, contentId));
 
 		return item;
+	}
 
+	private static void ValidateKey(string key)
+	{
+		if (string.IsNullOrEmpty(key))
+			throw new ArgumentException("Key is required.", nameof(key));
+
+		if (key.Length > MaxKeyLength)
+			throw new ArgumentException($"Key must be {MaxKeyLength} characters or fewer.", nameof(key));
 	}
 }

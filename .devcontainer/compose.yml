@@ -14,6 +14,8 @@ x-common-variables: &common-variables
   PLUGIN_USER: contentmetadata
   PLUGIN_PASSWORD: T3ll1g3nt
   SEED_LEGACY_METADATA: ${SEED_LEGACY_METADATA:-false}
+# Ports are bound to 127.0.0.1 so the SA password and unauthenticated Solr below
+# are only reachable from this machine, not from the local network.
 x-app-variables: &app-variables
   EVOLUTION_CONFIGURATION_SOURCES: file=~/communitySettings.json;file=/community/config/settings.json;env;command
 networks:
@@ -36,7 +38,7 @@ services:
     networks:
       - community
     ports:
-      - 5863:8080
+      - 127.0.0.1:5863:8080
     volumes:
       - cfs:/app/cfs
       - ./settings.json:/community/config/settings.json:ro
@@ -94,7 +96,7 @@ services:
     networks:
       - community
     ports:
-      - 5994:1433
+      - 127.0.0.1:5994:1433
     volumes:
       - sql:/var/opt/mssql
     env_file:
@@ -114,7 +116,7 @@ services:
     networks:
       - community
     ports:
-      - 5361:8983
+      - 127.0.0.1:5361:8983
     volumes:
       - solr:/var/solr
     environment:
@@ -151,7 +153,7 @@ services:
     networks:
       - community
     ports:
-      - 5260:5160
+      - 127.0.0.1:5260:5160
     environment:
       ASPNETCORE_URLS: http://+:5160
   smtp:
@@ -160,7 +162,7 @@ services:
     networks:
       - community
     ports:
-      - 5397:8025
+      - 127.0.0.1:5397:8025
   installer:
     image: af1.verintconnect.com/dfe-community/community/installer:14.0.0.684
     networks:
