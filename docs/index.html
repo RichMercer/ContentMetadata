@@ -1,17 +1,28 @@
 <!doctype html>
-<html lang="en-GB" data-theme="richmercer">
+<html lang="en-GB">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ContentMetadata for Verint Community</title>
 <meta name="description" content="Store key/value metadata against any Verint Community IContent entity, with in-process, widget and REST APIs.">
-<meta name="color-scheme" content="dark">
+<meta name="color-scheme" content="dark light">
+<script>
+  // Apply a saved theme before first paint. Without one, CSS follows the system setting.
+  try {
+    var saved = localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') document.documentElement.setAttribute('data-theme', saved);
+  } catch (e) {}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23ff7a3d'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root, [data-theme="richmercer"] {
+  /* Dark is the Richard Mercer theme from the design system. Light keeps its
+     neutrals from the system's light theme with a deeper orange, because the
+     brand orange is too light to use as text on a pale ground. */
+  :root {
+    color-scheme: dark;
     --canvas: #0e1012;
     --surface: var(--canvas);
     --surface-raised: #14171a;
@@ -32,6 +43,26 @@
     --grid-size: 24px;
     --pad: 24px;
   }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+      --canvas: #f4f3ef; --surface-raised: #ebe9e3; --grid: #e9e7e1;
+      --line: #d9d6cf; --line-strong: #7c8287;
+      --ink: #14171a; --ink-soft: #3d444a; --ink-muted: #5c646b;
+      --accent: #ad430d; --accent-hover: #923809; --on-accent: #ffffff;
+    }
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --canvas: #f4f3ef; --surface-raised: #ebe9e3; --grid: #e9e7e1;
+    --line: #d9d6cf; --line-strong: #7c8287;
+    --ink: #14171a; --ink-soft: #3d444a; --ink-muted: #5c646b;
+    --accent: #ad430d; --accent-hover: #923809; --on-accent: #ffffff;
+  }
+
+  .theme-toggle { font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.5; letter-spacing: 0.06em; text-transform: uppercase; background: none; border: 1px solid var(--line-strong); color: var(--ink-muted); padding: 4px 10px; cursor: pointer; white-space: nowrap; transition: color 120ms, background-color 120ms; }
+  .theme-toggle:hover { color: var(--ink); background: var(--surface-raised); }
+  .header-end { display: flex; align-items: center; gap: 20px; }
 
   *, *::before, *::after { box-sizing: border-box; }
   html { background: var(--canvas); color: var(--ink); -webkit-font-smoothing: antialiased; scroll-behavior: smooth; scroll-padding-top: 64px; }
@@ -143,15 +174,18 @@
 
 <header class="site">
   <a class="wordmark" href="#top">ContentMetadata <span>for Verint Community</span></a>
-  <nav aria-label="Sections">
-    <ul>
-      <li><a href="#install">Install</a></li>
-      <li><a href="#usage">Usage</a></li>
-      <li><a href="#rest">REST</a></li>
-      <li><a href="#security">Security</a></li>
-      <li class="keep"><a href="https://github.com/RichMercer/ContentMetadata">GitHub ↗</a></li>
-    </ul>
-  </nav>
+  <div class="header-end">
+    <nav aria-label="Sections">
+      <ul>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#usage">Usage</a></li>
+        <li><a href="#rest">REST</a></li>
+        <li><a href="#security">Security</a></li>
+        <li class="keep"><a href="https://github.com/RichMercer/ContentMetadata">GitHub ↗</a></li>
+      </ul>
+    </nav>
+    <button type="button" class="theme-toggle" hidden>Light mode</button>
+  </div>
 </header>
 
 <main id="top">
@@ -410,6 +444,23 @@ $metadata_v1_content.Delete($contentId)           <span class="c">## Delete ever
       });
     });
   });
+
+  (function () {
+    var toggle = document.querySelector('.theme-toggle');
+    var root = document.documentElement;
+    var system = window.matchMedia('(prefers-color-scheme: light)');
+    function current() { return root.getAttribute('data-theme') || (system.matches ? 'light' : 'dark'); }
+    function render() { toggle.textContent = current() === 'light' ? 'Dark mode' : 'Light mode'; }
+    toggle.hidden = false;
+    render();
+    toggle.addEventListener('click', function () {
+      var next = current() === 'light' ? 'dark' : 'light';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+      render();
+    });
+    system.addEventListener('change', render);
+  })();
 
   var links = Array.prototype.slice.call(document.querySelectorAll('nav a[href^="#"]'));
   if ('IntersectionObserver' in window) {
