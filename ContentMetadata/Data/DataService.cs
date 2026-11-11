@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Data.SqlClient;
 using Telligent.Evolution.Extensibility;
 using Telligent.Evolution.Extensibility.Api.Version1;
 
@@ -14,9 +14,22 @@ internal static class DataService
 {
 	#region Helper Methods
 
+	private static string _connectionString;
+
+	/// <summary>
+	/// Set by the plugin when Verint Community supplies its SQL Server controller.
+	/// </summary>
+	internal static void SetConnectionString(string connectionString)
+	{
+		_connectionString = connectionString;
+	}
+
 	private static SqlConnection GetSqlConnection()
 	{
-		return Apis.Get<IDatabaseConnections>().GetConnection("SiteSqlServer");
+		if (string.IsNullOrEmpty(_connectionString))
+			throw new InvalidOperationException("ContentMetadata has not been given a SQL Server connection by the platform. Ensure the ContentMetadata Plugin is enabled.");
+
+		return new SqlConnection(_connectionString);
 	}
 
 	private static SqlCommand CreateSprocCommand(string sprocName, SqlConnection connection)

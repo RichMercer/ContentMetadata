@@ -15,6 +15,11 @@ To add ContentMetadata to your project, you can add it via nuget.
 ```powershell
 Install-Package TelligentContentMetadata
 ```
+
+| Package version | Verint Community | .NET |
+| --- | --- | --- |
+| 14.x | 14 | .NET 10 |
+| 1.x | 11 to 13 | .NET Framework 4.7.2 |
 To access the API's, you will need to enable the plugin `ContentMetadata Plugin` in your Telligent Community instance. If your sites' connection string has dbowner access to your database, the install script will be run automatically when the plugin is enabled. If not, or you would prefer to run the script yourself, you can execute the SQL file here.
 
 * [SQL Install Script](https://raw.githubusercontent.com/RichMercer/ContentMetadata/master/ContentMetadata/Resources/Sql/Install.sql)

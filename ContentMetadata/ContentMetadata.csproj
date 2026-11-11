@@ -1,80 +1,37 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CFDD113A-9758-4902-A380-B289BBDDDE70}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>ContentMetadata</RootNamespace>
     <AssemblyName>ContentMetadata</AssemblyName>
-      <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <LangVersion>default</LangVersion>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Major version tracks the supported Verint Community version. -->
+    <Version>14.0.0</Version>
+
+    <PackageId>TelligentContentMetadata</PackageId>
+    <Title>ContentMetadata for Verint Community</Title>
+    <Authors>RichMercer</Authors>
+    <Description>ContentMetadata for Verint Community adds support for Metadata on Verint Community IContent entities. It was built as a replacement for ExtendedAttributes for developers who were using them to store their own custom data.</Description>
+    <PackageReleaseNotes>Updated for Verint Community 14 and .NET 10.</PackageReleaseNotes>
+    <Copyright>Copyright 2026</Copyright>
+    <PackageTags>Verint Community IContent Metadata ExtendedAttributes</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/RichMercer/ContentMetadata</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/RichMercer/ContentMetadata</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Telligent.Evolution.Platform">
-      <HintPath>references\Telligent.Evolution.Platform.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Verint.Community.Platform" Version="14.0.0.684" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
+    <!-- Overrides the vulnerable 9.0.18 pulled in by Microsoft.Data.SqlClient. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.15" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Api\ContentMetadataApi.cs" />
-    <Compile Include="Api\IContentMetadataApi.cs" />
-    <Compile Include="Api\PublicApi.cs" />
-    <Compile Include="Api\RestApi.cs" />
-    <Compile Include="Api\WidgetApi.cs" />
-    <Compile Include="CacheHelper.cs" />
-    <Compile Include="ContentMetadata.cs" />
-    <Compile Include="Data\DataService.cs" />
-    <Compile Include="Plugins\MetaContentPlugin.cs" />
-    <Compile Include="Extensions\MetaExtensions.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Resources\Sql\Install.sql" />
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="ContentMetadata.nuspec" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

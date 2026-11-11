@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using ContentMetadata.Api;
 using ContentMetadata.Data;
 using Telligent.Evolution.Extensibility;
@@ -11,7 +13,7 @@ using PropertyGroup = Telligent.Evolution.Extensibility.Configuration.Version1.P
 
 namespace ContentMetadata.Plugins;
 
-public class ContentMetadataPlugin : IInstallablePlugin, Telligent.Evolution.Extensibility.Version2.IConfigurablePlugin, IPluginGroup
+public class ContentMetadataPlugin : IDboAccessSqlServerConnectedPlugin, Telligent.Evolution.Extensibility.Version2.IConfigurablePlugin, IPluginGroup
 {
     private Telligent.Evolution.Extensibility.Version2.IPluginConfiguration Configuration { get; set; }
 
@@ -64,9 +66,36 @@ public class ContentMetadataPlugin : IInstallablePlugin, Telligent.Evolution.Ext
         DataService.Install();
     }
 
+    public Task InstallAsync(Version lastInstalledVersion, CancellationToken cancellationToken)
+    {
+        Install(lastInstalledVersion);
+        return Task.CompletedTask;
+    }
+
     public void Uninstall()
     {
         // Nothing to be done to uninstall. Leave data intact.
+    }
+
+    public Task UninstallAsync(CancellationToken cancellationToken)
+    {
+        Uninstall();
+        return Task.CompletedTask;
+    }
+
+    #endregion
+
+    #region ISqlServerConnectedPlugin Members
+
+    // Existing installs keep their table and procedures in dbo, so this plugin
+    // requests dbo access rather than using a plugin-specific schema.
+    public void SetController(ISqlServerConnectedPluginController controller)
+    {
+        DataService.SetConnectionString(controller.ConnectionString);
+    }
+
+    public void SetController(IDboAccessSqlServerConnectedPluginController controller)
+    {
     }
 
     #endregion

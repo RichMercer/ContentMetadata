@@ -21,7 +21,7 @@ public class RestApi : IRestEndpoints
 	{
 		#region GET
 
-		controller.Add(2, "metadata/{contentid}", HttpMethod.Get, req =>
+		controller.Add(2, "metadata/{ContentId}", HttpMethod.Get, req =>
 		{
 			var response = new RestResponse { Name = "ContentMetadata" };
 
@@ -31,7 +31,7 @@ public class RestApi : IRestEndpoints
 				if (param == null || !Guid.TryParse(param.ToString(), out var contentId))
 					throw new ArgumentException("ContentId is required.");
 
-				var key = req.Request.Params["Key"] ?? string.Empty;
+				var key = GetParameter(req, "Key") ?? string.Empty;
 
 				if (!string.IsNullOrEmpty(key))
 				{
@@ -68,11 +68,11 @@ public class RestApi : IRestEndpoints
 				if (string.IsNullOrEmpty(dataKey))
 					throw new ArgumentException("Key is required");
 
-				var dataValue = req.Request.Params["Value"] ?? string.Empty;
+				var dataValue = GetParameter(req, "Value") ?? string.Empty;
 				if (string.IsNullOrEmpty(dataValue))
 					throw new ArgumentException("Value is required");
 
-				Guid.TryParse(req.Request.Params["ContentTypeId"] ?? string.Empty, out var contentTypeId);
+				Guid.TryParse(GetParameter(req, "ContentTypeId") ?? string.Empty, out var contentTypeId);
 
 				if (!string.IsNullOrEmpty(dataKey) && !string.IsNullOrEmpty(dataValue) && contentTypeId != Guid.Empty)
 				{
@@ -113,17 +113,17 @@ public class RestApi : IRestEndpoints
 
 			try
 			{
-				if (!Guid.TryParse(req.Request.Params["ContentId"] ?? string.Empty, out var contentId))
+				if (!Guid.TryParse(GetParameter(req, "ContentId") ?? string.Empty, out var contentId))
 					throw new ArgumentException("ContentId is required.");
 
-				if (!Guid.TryParse(req.Request.Params["ContentTypeId"] ?? string.Empty, out var contentTypeId))
+				if (!Guid.TryParse(GetParameter(req, "ContentTypeId") ?? string.Empty, out var contentTypeId))
 					throw new ArgumentException("ContentTypeId is required.");
 
-				var key = req.Request.Params["Key"] ?? string.Empty;
+				var key = GetParameter(req, "Key") ?? string.Empty;
 				if (string.IsNullOrEmpty(key))
 					throw new ArgumentException("Key is required.");
 
-				var value = req.Request.Params["Value"] ?? string.Empty;
+				var value = GetParameter(req, "Value") ?? string.Empty;
 				if (string.IsNullOrEmpty(value))
 					throw new ArgumentException("Value is required.");
 
@@ -151,10 +151,10 @@ public class RestApi : IRestEndpoints
 
 			try
 			{
-				if (!Guid.TryParse(req.Request.Params["ContentId"] ?? string.Empty, out var contentId))
+				if (!Guid.TryParse(GetParameter(req, "ContentId") ?? string.Empty, out var contentId))
 					throw new ArgumentException("ContentId is required.");
 
-				var key = req.Request.Params["Key"] ?? string.Empty;
+				var key = GetParameter(req, "Key") ?? string.Empty;
 				if (string.IsNullOrEmpty(key))
 					throw new ArgumentException("Key is required.");
 
@@ -169,6 +169,15 @@ public class RestApi : IRestEndpoints
 		});
 
 		#endregion
+	}
+
+	/// <summary>
+	/// Reads a value from the query string, falling back to the form body. Replaces
+	/// HttpRequest.Params, which no longer exists on Verint Community 14.
+	/// </summary>
+	private static string GetParameter(IRestRequest req, string name)
+	{
+		return req.Request.Query.GetFirst(name, null) ?? req.Form?.GetFirst(name, null);
 	}
 }
 

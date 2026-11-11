@@ -12,7 +12,7 @@ public static class CacheHelper
 
     public static T Get<T>(string key, Func<T> getFunction, TimeSpan timeout, CacheScope scope = CacheScope.Context | CacheScope.Process)
     {
-        return CacheService.Get(key, scope, getFunction, new GetOptions<T> { ExpiresAfter = timeout });
+        return CacheService.Get(key, scope, getFunction, new GetOrPutOptions<T> { ExpiresAfter = timeout });
     }
 
     public static void Remove(string key, CacheScope scope = CacheScope.Context | CacheScope.Process)
