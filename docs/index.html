@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en-GB" data-theme="richmercer">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ContentMetadata for Verint Community</title>
+<meta name="description" content="Store key/value metadata against any Verint Community IContent entity, with in-process, widget and REST APIs.">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23ff7a3d'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root, [data-theme="richmercer"] {
+    --canvas: #0e1012;
+    --surface: var(--canvas);
+    --surface-raised: #14171a;
+    --grid: #15181b;
+    --line: #252a2f;
+    --line-strong: #60696f;
+    --ink: #e9ecee;
+    --ink-soft: #bfc6cc;
+    --ink-muted: #8d969e;
+    --accent: #ff7a3d;
+    --accent-hover: #ff9461;
+    --on-accent: #140a04;
+    --focus: var(--accent);
+    --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --frame: 1080px;
+    --reading: 68ch;
+    --grid-size: 24px;
+    --pad: 24px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { background: var(--canvas); color: var(--ink); -webkit-font-smoothing: antialiased; scroll-behavior: smooth; scroll-padding-top: 64px; }
+  body {
+    margin: 0;
+    font: 400 1rem/1.6 var(--font-sans);
+    background-color: var(--canvas);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+
+  :where(a, button):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+  a { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; transition: color 120ms; }
+  a:hover { color: var(--accent); }
+
+  .frame { max-width: var(--frame); margin: 0 auto; background: var(--surface); border-inline: 1px solid var(--line); min-height: 100vh; }
+  .panel { border-bottom: 1px solid var(--line); padding: 40px var(--pad); }
+  .panel:last-child { border-bottom: 0; }
+
+  .label, .btn, nav a, th, dt, .tag {
+    font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.5; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .label { color: var(--ink-muted); margin: 0 0 8px; }
+
+  /* Header */
+  header.site { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 var(--pad); height: 56px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .wordmark { font-weight: 600; font-size: 1rem; letter-spacing: -0.01em; text-decoration: none; color: var(--ink); }
+  .wordmark span { color: var(--ink-muted); font-weight: 400; }
+  nav ul { display: flex; gap: 20px; list-style: none; margin: 0; padding: 0; }
+  .wordmark, nav a { white-space: nowrap; }
+  nav a { color: var(--ink-muted); text-decoration: none; padding: 4px 0; border-bottom: 2px solid transparent; }
+  nav a:hover { color: var(--ink); }
+  nav a[aria-current="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+  /* Hero */
+  .hero { padding: 72px 32px 48px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 48px; align-items: end; }
+  h1 { font-size: clamp(2rem, 4.6vw, 3.25rem); line-height: 1.08; letter-spacing: -0.025em; font-weight: 500; margin: 0 0 20px; }
+  .lede { font-size: 1.0625rem; line-height: 1.6; color: var(--ink-soft); max-width: 52ch; margin: 0; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; text-decoration: none; border: 1px solid var(--line-strong); color: var(--ink); background: transparent; cursor: pointer; transition: background-color 120ms, color 120ms; }
+  .btn:hover { background: var(--surface-raised); color: var(--ink); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+  .btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
+
+  dl.spec { margin: 0; border-top: 1px solid var(--line); }
+  dl.spec div { display: grid; grid-template-columns: 96px 1fr; border-bottom: 1px solid var(--line); padding: 11px 0; gap: 16px; }
+  dt { color: var(--ink-muted); }
+  dd { margin: 0; font: 400 0.8125rem/1.5 var(--font-mono); color: var(--ink); }
+
+  /* Sections */
+  section > .head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 20px; }
+  h2 { font-size: 1.75rem; line-height: 1.2; letter-spacing: -0.015em; font-weight: 500; margin: 0; }
+  h3 { font-size: 1.25rem; line-height: 1.25; letter-spacing: -0.01em; font-weight: 500; margin: 32px 0 8px; }
+  .prose { max-width: var(--reading); }
+  .prose p, .prose li { color: var(--ink-soft); }
+  .prose p { margin: 0 0 16px; }
+  .prose ul, .prose ol { margin: 0 0 16px; padding-left: 20px; }
+  .prose li { margin-bottom: 6px; }
+  .prose strong { color: var(--ink); font-weight: 500; }
+  code { font-family: var(--font-mono); font-size: 0.875em; color: var(--ink); }
+  :not(pre) > code { background: var(--surface-raised); border: 1px solid var(--line); padding: 1px 5px; overflow-wrap: anywhere; }
+
+  .code { position: relative; margin: 0 0 20px; border: 1px solid var(--line); background: var(--surface-raised); max-width: 100%; }
+  .code .bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding: 0 0 0 12px; }
+  .code .bar .label { margin: 0; }
+  .code button { font: inherit; font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; background: none; border: 0; border-left: 1px solid var(--line); color: var(--ink-muted); padding: 8px 12px; cursor: pointer; }
+  .code button:hover { color: var(--ink); background: var(--canvas); }
+  pre { margin: 0; padding: 16px; overflow-x: auto; font: 400 0.8125rem/1.6 var(--font-mono); color: var(--ink-soft); }
+  pre .c { color: var(--ink-muted); }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); margin: 0 0 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+  th { text-align: left; color: var(--ink-muted); font-weight: 400; padding: 10px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--line); color: var(--ink-soft); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:hover td { background: var(--surface-raised); }
+  td:first-child { color: var(--ink); font: 400 0.8125rem/1.6 var(--font-mono); white-space: nowrap; }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); margin-top: 8px; }
+  .cols > div { padding: 20px 24px 4px 0; }
+  .cols > div + div { padding-left: 24px; border-left: 1px solid var(--line); }
+  .cols h3 { margin-top: 0; }
+
+  .notice { border: 1px solid var(--line-strong); padding: 16px 20px; margin: 0 0 20px; max-width: var(--reading); }
+  .notice .label { color: var(--accent); }
+  .notice p { margin: 0; color: var(--ink-soft); }
+
+  footer.site { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 24px var(--pad) 40px; font: 400 0.8125rem/1.5 var(--font-mono); color: var(--ink-muted); }
+  footer.site a { color: var(--ink-muted); }
+  footer.site a:hover { color: var(--accent); }
+
+  @media (max-width: 820px) {
+    :root { --pad: 16px; }
+    nav li:not(.keep) { display: none; }
+    .wordmark span { display: none; }
+    .hero { grid-template-columns: 1fr; padding: 44px var(--pad) 32px; gap: 32px; }
+    .cols { grid-template-columns: 1fr; }
+    .cols > div, .cols > div + div { padding: 20px 0 4px; border-left: 0; }
+    .cols > div + div { border-top: 1px solid var(--line); }
+    .panel { padding: 32px var(--pad); }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+
+<header class="site">
+  <a class="wordmark" href="#top">ContentMetadata <span>for Verint Community</span></a>
+  <nav aria-label="Sections">
+    <ul>
+      <li><a href="#install">Install</a></li>
+      <li><a href="#usage">Usage</a></li>
+      <li><a href="#rest">REST</a></li>
+      <li><a href="#security">Security</a></li>
+      <li class="keep"><a href="https://github.com/RichMercer/ContentMetadata">GitHub ↗</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="top">
+
+<section class="panel hero">
+  <div>
+    <p class="label">Verint Community 14 plugin</p>
+    <h1>Key/value metadata for any Verint Community content.</h1>
+    <p class="lede">Store your own data against blog posts, forum threads, wiki pages, users, groups, comments or any other <code>IContent</code> entity. Read and write it from C#, Velocity widgets or REST, and look content up by value.</p>
+    <div class="actions">
+      <a class="btn primary" href="https://www.nuget.org/packages/TelligentContentMetadata">Install from NuGet ↗</a>
+      <a class="btn" href="https://github.com/RichMercer/ContentMetadata">Source on GitHub ↗</a>
+    </div>
+  </div>
+  <dl class="spec">
+    <div><dt>Package</dt><dd>TelligentContentMetadata</dd></div>
+    <div><dt>Version</dt><dd>14.x</dd></div>
+    <div><dt>Platform</dt><dd>Verint Community 14 · .NET 10</dd></div>
+    <div><dt>Storage</dt><dd>Plugin SQL schema</dd></div>
+    <div><dt>Licence</dt><dd>MIT</dd></div>
+  </dl>
+</section>
+
+<section class="panel" id="why" aria-labelledby="why-h">
+  <div class="head"><h2 id="why-h">Why not extended attributes?</h2></div>
+  <div class="prose">
+    <p>ContentMetadata was built to replace extended attributes for developers who used them to store their own data. Extended attributes:</p>
+    <ul>
+      <li>aren't available on every entity, for example wikis and comments;</li>
+      <li>can hurt performance when a lot of data is stored against one object;</li>
+      <li>can't be used to look content up, because the APIs don't filter on them;</li>
+      <li>are readable by anyone who can read the entity, and editable by anyone who can edit it.</li>
+    </ul>
+    <p>ContentMetadata keeps its data in its own table, separate from the entity, and you choose which APIs can reach it. It does not check permissions on the content itself, so read <a href="#security">Security</a> before exposing it to users.</p>
+  </div>
+</section>
+
+<section class="panel" id="install" aria-labelledby="install-h">
+  <div class="head"><h2 id="install-h">Install</h2><span class="label">Step 1 of 3</span></div>
+  <div class="prose">
+    <p>Add the package, deploy <code>ContentMetadata.dll</code> with your other plugins, then enable <strong>ContentMetadata Plugin</strong> in Administration. On install, the plugin creates its <code>Metadata</code> table in its own SQL Server schema.</p>
+  </div>
+  <div class="code"><div class="bar"><p class="label">Shell</p><button type="button">Copy</button></div><pre>dotnet add package TelligentContentMetadata</pre></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Package</th><th>Verint Community</th><th>.NET</th></tr></thead>
+      <tbody>
+        <tr><td>14.x</td><td>14</td><td>.NET 10</td></tr>
+        <tr><td>1.x</td><td>11 to 13</td><td>.NET Framework 4.7.2</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="prose">
+    <p>The plugin has one option, <strong>Enable search</strong> (off by default), which adds metadata to the search index. See <a href="#search">Search</a>.</p>
+  </div>
+</section>
+
+<section class="panel" id="database" aria-labelledby="database-h">
+  <div class="head"><h2 id="database-h">Database access</h2><span class="label">Step 2 of 3</span></div>
+  <div class="prose">
+    <p>Verint Community 14 no longer lets plugins use the Community database directly. ContentMetadata implements <code>ISqlServerConnectedPlugin</code>, so the platform supplies a connection string that can only reach the plugin's own schema.</p>
+  </div>
+  <div class="cols">
+    <div class="prose">
+      <h3>Verint hosted</h3>
+      <p>Nothing to configure. The schema and connection string are created for you.</p>
+    </div>
+    <div class="prose">
+      <h3>Self-hosted</h3>
+      <p>Create a SQL Server login and user for the plugin. Give the user its own default schema, owned by that user, and <code>CREATE TABLE</code> permission. Then add the connection string to <code>PluginConnectionStrings</code> in your <a href="https://community.telligent.com/community/14/a/user-documentation/UD2221/how-do-i-configure-environment-options">environment configuration ↗</a>. Without it, the platform won't initialise the plugin.</p>
+    </div>
+  </div>
+  <div class="code"><div class="bar"><p class="label">settings.json</p><button type="button">Copy</button></div><pre>"PluginConnectionStrings": {
+  "ContentMetadata.Plugins.ContentMetadataPlugin, ContentMetadata": "server=...;database=...;uid=contentmetadata;pwd=...;TrustServerCertificate=True"
+}</pre></div>
+  <div class="code"><div class="bar"><p class="label">SQL · self-hosted setup</p><button type="button">Copy</button></div><pre>CREATE LOGIN [contentmetadata] WITH PASSWORD = N'&lt;strong password&gt;';
+GO
+USE [community_app];
+GO
+CREATE USER [contentmetadata] FOR LOGIN [contentmetadata] WITH DEFAULT_SCHEMA = [contentmetadata];
+GO
+CREATE SCHEMA [contentmetadata] AUTHORIZATION [contentmetadata];
+GO
+GRANT CREATE TABLE TO [contentmetadata];</pre></div>
+</section>
+
+<section class="panel" id="upgrade" aria-labelledby="upgrade-h">
+  <div class="head"><h2 id="upgrade-h">Upgrading from 1.x</h2><span class="label">Step 3 of 3</span></div>
+  <div class="prose">
+    <p>Earlier versions stored metadata in <code>[dbo].[custom_Metadata]</code> with stored procedures in <code>dbo</code>. Nothing reads or writes <code>dbo</code> at runtime any more; the plugin only touches it during install to migrate your data. Each time the plugin installs, it:</p>
+    <ol>
+      <li>copies every legacy row into <code>[&lt;plugin schema&gt;].[Metadata]</code>, skipping rows that are already there;</li>
+      <li>checks that every legacy row is present in the plugin schema;</li>
+      <li>removes the legacy table and the <code>custom_Metadata_*</code> procedures, but only if step 2 succeeded. Otherwise the table is kept and event 3662 is logged.</li>
+    </ol>
+    <p>The migration is safe to repeat. Back up the database before upgrading.</p>
+  </div>
+  <div class="notice">
+    <p class="label">Self-hosted sites</p>
+    <p>The platform's read access to <code>dbo</code> during install only exists in Verint's hosted environment. Before you deploy 14.x, grant the plugin's user read access to the legacy table. Install only runs when the plugin version changes, so make the grant first. The grant is removed along with the table once the data is migrated.</p>
+  </div>
+  <div class="code"><div class="bar"><p class="label">SQL</p><button type="button">Copy</button></div><pre>GRANT SELECT ON [dbo].[custom_Metadata] TO [contentmetadata];</pre></div>
+</section>
+
+<section class="panel" id="usage" aria-labelledby="usage-h">
+  <div class="head"><h2 id="usage-h">Usage</h2></div>
+  <div class="prose">
+    <p>The in-process, widget and REST APIs share one implementation, so they behave the same. Each lists, gets, sets and deletes metadata for an <code>IContent</code> entity, and can find content by key and value. You always pass the <code>ContentId</code> of the content the metadata belongs to.</p>
+    <ul>
+      <li>Keys are 1 to 64 characters and compared exactly, so <code>Colour</code> and <code>colour</code> are different keys.</li>
+      <li>Values are strings of any length. Setting an empty value deletes the key.</li>
+      <li>When content is deleted, its metadata is deleted too.</li>
+      <li>Reads are cached for 100 seconds per content item. A change clears the cache on the server that made it; other servers may return the old value until their cache expires.</li>
+    </ul>
+  </div>
+
+  <h3>In-process API</h3>
+  <div class="prose"><p>Use <code>IContentMetadataApi</code> from C# in plugins or other custom code.</p></div>
+  <div class="code"><div class="bar"><p class="label">C#</p><button type="button">Copy</button></div><pre>var api = Apis.Get&lt;IContentMetadataApi&gt;();
+
+<span class="c">// All metadata for a piece of content</span>
+IReadOnlyList&lt;ContentMetadata&gt; items = api.List(contentId);
+
+<span class="c">// One value. Returns an empty ContentMetadata (Value is null) when the key isn't set.</span>
+ContentMetadata item = api.Get(contentId, "MyKey");
+bool featured = item.GetBoolValue(false);
+int priority = item.GetIntValue(0);
+
+<span class="c">// Add or update a value</span>
+api.Set(contentId, contentTypeId, "MyKey", "MyValue");
+
+<span class="c">// Delete one key, or every key for the content</span>
+api.Delete(contentId, "MyKey");
+api.Delete(contentId);
+
+<span class="c">// Find content by metadata: every match, or the first of one content type</span>
+IReadOnlyList&lt;ContentMetadata&gt; matches = api.List("MyKey", "MyValue");
+ContentMetadata match = api.Get(contentTypeId, "MyKey", "MyValue");</pre></div>
+
+  <div class="prose"><p><code>ContentMetadata.Extensions</code> adds the same operations to <code>IContent</code>:</p></div>
+  <div class="code"><div class="bar"><p class="label">C#</p><button type="button">Copy</button></div><pre>using ContentMetadata.Extensions;
+
+var all = post.GetMetadata();
+string value = post.GetMetadata("MyKey");
+int count = post.GetMetadataInt("Count", 0);
+bool enabled = post.GetMetadataBool("Enabled", false);
+post.SetMetadata("MyKey", "MyValue");</pre></div>
+
+  <h3>Widget API</h3>
+  <div class="prose"><p>The <code>$metadata_v1_content</code> Velocity extension exposes the same methods to widgets. Encode values before output, and check the accessing user's permissions before calling <code>Set</code> or <code>Delete</code> from a callback.</p></div>
+  <div class="code"><div class="bar"><p class="label">Velocity</p><button type="button">Copy</button></div><pre>#set($items = $metadata_v1_content.List($contentId))
+#set($item = $metadata_v1_content.Get($contentId, 'MyKey'))
+$core_v2_encoding.HtmlEncode($item.Value)
+
+#set($item = $metadata_v1_content.Set($contentId, $contentTypeId, 'MyKey', 'MyValue'))
+$metadata_v1_content.Delete($contentId, 'MyKey')  <span class="c">## Delete one key</span>
+$metadata_v1_content.Delete($contentId)           <span class="c">## Delete every key</span>
+
+#set($matches = $metadata_v1_content.List('MyKey', 'MyValue'))</pre></div>
+</section>
+
+<section class="panel" id="rest" aria-labelledby="rest-h">
+  <div class="head"><h2 id="rest-h">REST API</h2></div>
+  <div class="prose">
+    <p>Endpoints are under <code>/api.ashx/v2/</code>; add <code>.json</code> or <code>.xml</code> to choose the format. Each response has <code>Data</code> and <code>Errors</code>. Parameters go in the query string or, for POST and DELETE, in form fields.</p>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Endpoint</th><th>Parameters</th><th>Returns</th></tr></thead>
+      <tbody>
+        <tr><td>GET metadata/{ContentId}</td><td><code>Key</code> (optional)</td><td>Every item for the content, or the one item for <code>Key</code></td></tr>
+        <tr><td>GET findmetadata/{Key}</td><td><code>Value</code> (required), <code>ContentTypeId</code> (optional)</td><td>Every item with that key and value, or the first of that content type</td></tr>
+        <tr><td>POST metadata</td><td><code>ContentId</code>, <code>ContentTypeId</code>, <code>Key</code>, <code>Value</code></td><td>The saved item</td></tr>
+        <tr><td>DELETE metadata</td><td><code>ContentId</code>, <code>Key</code></td><td>Nothing</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="code"><div class="bar"><p class="label">Shell</p><button type="button">Copy</button></div><pre>curl -H "Rest-User-Token: &lt;token&gt;" \
+  "https://community.example.com/api.ashx/v2/metadata/&lt;ContentId&gt;.json?Key=MyKey"</pre></div>
+  <h3>Scopes</h3>
+  <div class="prose">
+    <p>Verint Community 14 only lets a caller use endpoints whose scopes it has been granted. These endpoints are in the <strong>Content Metadata</strong> scope group: <code>contentmetadata.metadata.readonly</code> for GET and the matching modify scope for POST and DELETE. Grant them only to the API keys, OAuth clients and widgets that need them.</p>
+  </div>
+</section>
+
+<section class="panel" id="search" aria-labelledby="search-h">
+  <div class="head"><h2 id="search-h">Search</h2></div>
+  <div class="prose">
+    <p>With <strong>Enable search</strong> on, metadata is added to each item as it is indexed. The field name is the key in lowercase with a <code>metadata_</code> prefix, so <code>MyData</code> becomes <code>metadata_mydata</code>, and you can query it through the standard search APIs:</p>
+  </div>
+  <div class="code"><div class="bar"><p class="label">SearchResults query</p><button type="button">Copy</button></div><pre>query=metadata_mydata:myvalue</pre></div>
+  <div class="prose">
+    <p>Solr field names and values are case sensitive. Use keys made of letters, digits and underscores, and don't enable search if any metadata is sensitive.</p>
+  </div>
+</section>
+
+<section class="panel" id="security" aria-labelledby="security-h">
+  <div class="head"><h2 id="security-h">Security</h2></div>
+  <div class="notice">
+    <p class="label">Read before exposing the APIs</p>
+    <p>ContentMetadata does not check whether the caller can see or edit the content that a <code>ContentId</code> points to.</p>
+  </div>
+  <div class="prose">
+    <ul>
+      <li><strong>REST:</strong> the read scope allows reading metadata for any content ID, including content in private groups, and <code>findmetadata</code> can reveal which content IDs hold a value. The modify scope allows changing or deleting metadata on any content. Grant these scopes only to trusted callers, and don't store anything sensitive if untrusted users can reach the endpoints.</li>
+      <li><strong>Widgets and plugins:</strong> your code decides who can do what. Before calling <code>Set</code> or <code>Delete</code> with an ID from the request, check that the accessing user may edit that content. HTML-encode values before rendering them.</li>
+      <li><strong>Content type:</strong> <code>ContentTypeId</code> is stored as supplied and isn't checked against the content, so don't rely on it alone.</li>
+      <li><strong>Search:</strong> indexed metadata can be searched by anyone who can see the content.</li>
+    </ul>
+    <p>Please report vulnerabilities privately through <a href="https://github.com/RichMercer/ContentMetadata/security/advisories/new">GitHub security advisories ↗</a>, not in a public issue.</p>
+  </div>
+</section>
+
+<section class="panel" id="events" aria-labelledby="events-h">
+  <div class="head"><h2 id="events-h">Event log</h2></div>
+  <div class="prose"><p>The plugin writes to the Community event log with the category <code>ContentMetadata</code>.</p></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Event</th><th>Type</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>3661</td><td>Error</td><td>No SQL Server connection was provided, so the table wasn't created. Add the <code>PluginConnectionStrings</code> entry.</td></tr>
+        <tr><td>3662</td><td>Error</td><td>Legacy rows were copied but some couldn't be verified. The legacy table was kept.</td></tr>
+        <tr><td>3663</td><td>Information</td><td>Legacy data was migrated, and the legacy table and procedures were removed.</td></tr>
+        <tr><td>3664</td><td>Information</td><td>No legacy table was visible during install.</td></tr>
+        <tr><td>3665</td><td>Error</td><td>A REST request failed unexpectedly. The caller gets a generic error; the details are here.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel" id="entities" aria-labelledby="entities-h">
+  <div class="head"><h2 id="entities-h">Supported entities</h2></div>
+  <div class="prose">
+    <p>Any entity that implements <code>IContent</code>. Commonly used ones include Achievement, Blog, BlogPost, Calendar, Event, Challenge, Idea, Comment, ContentPage, Conversation, ConversationMessage, Forum, ForumThread, ForumReply, Gallery, Media, Group, GroupUser, KnowledgeCollection, Document, Leaderboard, StatusMessage, User, Wiki and WikiPage.</p>
+    <p>To build or contribute, see the development notes in the <a href="https://github.com/RichMercer/ContentMetadata#development">README ↗</a>.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <span>ContentMetadata · MIT licence</span>
+  <span>By <a href="https://richmercer.com">Richard Mercer ↗</a> · <a href="https://github.com/RichMercer/ContentMetadata">GitHub ↗</a> · <a href="https://www.nuget.org/packages/TelligentContentMetadata">NuGet ↗</a></span>
+</footer>
+
+</div>
+<script>
+  document.querySelectorAll('.code button').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var text = button.closest('.code').querySelector('pre').innerText;
+      navigator.clipboard.writeText(text).then(function () {
+        button.textContent = 'Copied';
+        setTimeout(function () { button.textContent = 'Copy'; }, 1500);
+      }, function () {
+        button.textContent = 'Press Ctrl+C';
+      });
+    });
+  });
+
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav a[href^="#"]'));
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        links.forEach(function (link) {
+          if (link.getAttribute('href') === '#' + entry.target.id) link.setAttribute('aria-current', 'true');
+          else link.removeAttribute('aria-current');
+        });
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    links.forEach(function (link) {
+      var target = document.querySelector(link.getAttribute('href'));
+      if (target) observer.observe(target);
+    });
+  }
+</script>
+</body>
+</html>
